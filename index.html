@@ -1,853 +1,413 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Cyber-AR Vision | Transforme seu Celular em Óculos AR / SBS</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Three.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background-color: #030712;
-            color: #f3f4f6;
-            overflow: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+<title>AR Glasses</title>
 
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        /* Video element for background camera pass-through */
-        #camera-feed {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    font-family: Arial, sans-serif;
+    color: white;
+}
 
-        /* Dual Viewport SBS layout */
-        .sbs-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            z-index: 10;
-        }
+/* Câmera */
+#camera {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
 
-        .viewport {
-            flex: 1;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-            border-right: 1px solid rgba(0, 240, 255, 0.2);
-        }
+/* Tela virtual */
+#virtualScreen {
+    position: absolute;
+    width: 320px;
+    height: 220px;
 
-        .viewport:last-child {
-            border-right: none;
-        }
+    left: 50%;
+    top: 50%;
 
-        canvas.webgl-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
+    transform: translate(-50%, -50%);
 
-        /* Glassmorphism Cyber HUD Effects */
-        .hud-panel {
-            background: rgba(8, 15, 30, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
-        }
+    background: rgba(10, 10, 15, 0.88);
+    border: 2px solid #00ffff;
+    border-radius: 12px;
 
-        .glow-text-cyan {
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
-        }
+    box-shadow:
+        0 0 20px rgba(0,255,255,.6),
+        inset 0 0 20px rgba(0,255,255,.1);
 
-        .glow-box-cyan {
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-        }
+    z-index: 5;
 
-        /* Center divider line for VR Box / Cardboard optical alignment */
-        .alignment-divider {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 2px;
-            background: rgba(0, 240, 255, 0.4);
-            box-shadow: 0 0 8px rgba(0, 240, 255, 0.8);
-            z-index: 20;
-            transform: translateX(-50%);
-            pointer-events: none;
-        }
+    overflow: hidden;
 
-        .crosshair-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 16px;
-            height: 16px;
-            border: 1px solid rgba(0, 240, 255, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+    resize: both;
+}
 
-        .crosshair-center::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 4px;
-            height: 4px;
-            background: #00f0ff;
-            border-radius: 50%;
-        }
+/* Barra da tela */
+#screenHeader {
+    height: 35px;
+    background: rgba(0,0,0,.8);
 
-        /* UI Hide/Show transitions */
-        .fade-ui {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        .ui-hidden {
-            opacity: 0 !important;
-            pointer-events: none !important;
-            transform: translateY(20px);
-        }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.8);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #00f0ff;
-            border-radius: 3px;
-        }
-    </style>
+    padding: 0 10px;
+
+    cursor: move;
+
+    border-bottom: 1px solid #00ffff;
+}
+
+#screenHeader span {
+    font-size: 13px;
+    color: #00ffff;
+}
+
+#close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Conteúdo */
+#content {
+    width: 100%;
+    height: calc(100% - 35px);
+    border: 0;
+}
+
+/* Menu */
+#menu {
+    position: fixed;
+
+    left: 50%;
+    bottom: 20px;
+
+    transform: translateX(-50%);
+
+    z-index: 10;
+
+    display: flex;
+    gap: 8px;
+
+    background: rgba(0,0,0,.75);
+
+    padding: 10px;
+
+    border-radius: 15px;
+
+    backdrop-filter: blur(10px);
+}
+
+button {
+    border: 1px solid #00ffff;
+
+    background: #111;
+
+    color: white;
+
+    padding: 10px 14px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #00ffff;
+    color: #000;
+}
+
+#urlInput {
+    width: 180px;
+
+    background: #111;
+    color: white;
+
+    border: 1px solid #555;
+
+    border-radius: 8px;
+
+    padding: 10px;
+}
+
+/* Modo central */
+#crosshair {
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+
+    width: 8px;
+    height: 8px;
+
+    transform: translate(-50%, -50%);
+
+    border: 1px solid rgba(0,255,255,.7);
+
+    border-radius: 50%;
+
+    z-index: 3;
+
+    pointer-events: none;
+}
+</style>
 </head>
-<body class="bg-gray-950 text-gray-100 h-screen w-screen overflow-hidden select-none">
 
-    <!-- Video element for background camera stream (AR Pass-through) -->
-    <video id="camera-feed" autoplay playsinline muted></video>
+<body>
 
-    <!-- Center Line Divider for Cardboard Lens Alignment -->
-    <div id="vr-divider" class="alignment-divider"></div>
+<!-- Câmera -->
+<video id="camera" autoplay playsinline></video>
 
-    <!-- SBS Viewports Container -->
-    <div id="sbs-wrapper" class="sbs-container">
-        <!-- Left Eye Viewport -->
-        <div id="viewport-left" class="viewport">
-            <div class="crosshair-center"></div>
-        </div>
+<!-- Mira -->
+<div id="crosshair"></div>
 
-        <!-- Right Eye Viewport (SBS Mode) -->
-        <div id="viewport-right" class="viewport">
-            <div class="crosshair-center"></div>
-        </div>
+<!-- Tela virtual -->
+<div id="virtualScreen">
+
+    <div id="screenHeader">
+        <span>AR SCREEN</span>
+
+        <button id="close">×</button>
     </div>
 
-    <!-- Hidden Video Source for 3D Spatial Projection Engine -->
-    <video id="ar-video-source" class="hidden" loop crossorigin="anonymous" playsinline muted></video>
+    <iframe
+        id="content"
+        src="https://example.com">
+    </iframe>
 
-    <!-- INITIAL WELCOME & PERMISSIONS MODAL -->
-    <div id="modal-welcome" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-lg flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        <div class="hud-panel w-full max-w-lg rounded-2xl p-6 sm:p-8 space-y-6 border-cyan-500/50 my-auto">
-            
-            <div class="text-center space-y-2">
-                <div class="inline-flex p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mb-2">
-                    <i data-lucide="glasses" class="w-10 h-10 animate-pulse"></i>
-                </div>
-                <h1 class="font-orbitron text-xl sm:text-2xl font-black tracking-wider text-cyan-400 glow-text-cyan">
-                    CYBER-VISION AR
-                </h1>
-                <p class="text-xs sm:text-sm text-gray-300">
-                    Transforme seu celular em um óculos de Realidade Aumentada (AR Pass-through) ou VR Box (Side-by-Side).
-                </p>
-            </div>
+</div>
 
-            <div class="space-y-3 text-xs text-gray-300 bg-gray-900/60 p-4 rounded-xl border border-cyan-500/20">
-                <div class="flex items-start space-x-3">
-                    <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
-                    <div>
-                        <strong class="text-amber-300 block mb-0.5">Por que preciso clicar para Iniciar?</strong>
-                        Navegadores modernos exigem que o acesso à **Câmera** e aos **Sensores de Orientação (Giroscópio)** ocorram obrigatoriamente após um gesto direto do usuário.
-                    </div>
-                </div>
+<!-- Controles -->
+<div id="menu">
 
-                <div class="flex items-start space-x-3 pt-2 border-t border-gray-800">
-                    <i data-lucide="info" class="w-5 h-5 text-cyan-400 shrink-0 mt-0.5"></i>
-                    <div>
-                        <strong class="text-cyan-300 block mb-0.5">Modo de Segurança / Sem Câmera (HTTP Local)</strong>
-                        Se você abriu o arquivo localmente sem HTTPS e o navegador negar a câmera, o app entrará automaticamente no **Modo VR Futurist Grid**, permitindo assistir os vídeos em 3D e testar todas as funções!
-                    </div>
-                </div>
-            </div>
+    <button onclick="startCamera()">
+        📷 AR
+    </button>
 
-            <!-- Single Master Permission Button -->
-            <button id="btn-start-ar" class="w-full py-4 bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-500 hover:from-cyan-400 hover:to-teal-300 text-gray-950 font-orbitron font-extrabold rounded-xl text-sm tracking-widest uppercase transition-all transform active:scale-95 glow-box-cyan flex items-center justify-center space-x-2">
-                <i data-lucide="power" class="w-5 h-5"></i>
-                <span>INICIAR MODO AR / VR</span>
-            </button>
+    <input
+        id="urlInput"
+        placeholder="https://site.com">
 
-            <div class="text-center text-[11px] text-gray-500">
-                Dica para celulares: Para melhor experiência com o headset, ative o **Modo Tela Cheia** e desative a rotação automática do aparelho.
-            </div>
-        </div>
-    </div>
+    <button onclick="openURL()">
+        Abrir
+    </button>
 
-    <!-- MAIN HUD CONTROLS OVERLAY -->
-    <div id="ui-overlay" class="fixed inset-0 z-30 pointer-events-none flex flex-col justify-between p-4 sm:p-6 fade-ui">
-        
-        <!-- Header Bar -->
-        <div class="flex items-center justify-between pointer-events-auto">
-            <div class="hud-panel rounded-xl px-3.5 py-2 flex items-center space-x-3">
-                <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
-                <div>
-                    <h1 class="font-orbitron text-xs font-bold text-cyan-400 tracking-wider">CYBER-AR</h1>
-                    <p class="text-[9px] font-mono text-emerald-400 tracking-wider" id="status-mode">MODO AR PASS-THROUGH</p>
-                </div>
-            </div>
+    <button onclick="captureScreen()">
+        📱 Tela
+    </button>
 
-            <!-- Top Action Buttons -->
-            <div class="flex items-center space-x-2">
-                <button id="btn-toggle-sbs" class="hud-panel px-3 py-2 rounded-xl text-cyan-400 hover:bg-cyan-500/20 active:scale-95 transition flex items-center space-x-1.5 text-xs font-semibold">
-                    <i data-lucide="glasses" class="w-4 h-4"></i>
-                    <span id="txt-sbs-btn" class="hidden sm:inline">ALTERNAR SBS / TELA ÚNICA</span>
-                </button>
-                <button id="btn-toggle-camera" class="hud-panel p-2 rounded-xl text-emerald-400 hover:bg-emerald-500/20 active:scale-95 transition">
-                    <i data-lucide="camera" class="w-4 h-4"></i>
-                </button>
-                <button id="btn-open-settings" class="hud-panel p-2 rounded-xl text-cyan-400 hover:bg-cyan-500/20 active:scale-95 transition">
-                    <i data-lucide="sliders" class="w-4 h-4"></i>
-                </button>
-                <button id="btn-fullscreen" class="hud-panel p-2 rounded-xl text-gray-300 hover:bg-gray-700/50 active:scale-95 transition">
-                    <i data-lucide="maximize" class="w-4 h-4"></i>
-                </button>
-            </div>
-        </div>
+</div>
 
-        <!-- Center Notification Toast -->
-        <div id="toast-message" class="self-center hud-panel px-4 py-2 rounded-xl text-xs text-cyan-300 font-mono opacity-0 transition-opacity duration-300 border-cyan-500/50 pointer-events-none">
-            Visão Recalibrada
-        </div>
 
-        <!-- Bottom Controls Dock -->
-        <div class="flex items-end justify-between pointer-events-auto">
-            <div class="flex flex-col space-y-2">
-                <button id="btn-recenter" class="hud-panel px-3.5 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:bg-cyan-500/20 active:scale-95 transition flex items-center space-x-2">
-                    <i data-lucide="compass" class="w-4 h-4"></i>
-                    <span>RECALIBRAR VISÃO</span>
-                </button>
-                <button id="btn-toggle-gyro" class="hud-panel px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-300 hover:bg-indigo-500/20 active:scale-95 transition flex items-center space-x-2">
-                    <i data-lucide="scan" class="w-4 h-4"></i>
-                    <span id="txt-gyro-mode">GIROSCÓPIO: ON</span>
-                </button>
-            </div>
+<script>
 
-            <!-- Floating Video Mini Controls -->
-            <div class="hud-panel px-3 py-2 rounded-xl flex items-center space-x-2">
-                <button id="btn-play-pause-hud" class="bg-cyan-500 text-gray-950 p-2 rounded-lg hover:bg-cyan-400 transition">
-                    <i data-lucide="play" class="w-4 h-4 fill-current" id="icon-hud-play"></i>
-                </button>
-                <div class="hidden sm:block text-[11px] font-mono text-cyan-200" id="hud-timer">
-                    00:00
-                </div>
-            </div>
-        </div>
-    </div>
+const camera = document.getElementById("camera");
 
-    <!-- SETTINGS & VIDEO MANAGER MODAL -->
-    <div id="modal-settings" class="fixed inset-0 z-40 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="hud-panel w-full max-w-lg rounded-2xl p-5 sm:p-6 space-y-5 border-cyan-500/40 max-h-[90vh] overflow-y-auto">
-            
-            <div class="flex justify-between items-center border-b border-cyan-500/20 pb-3">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="video" class="w-5 h-5 text-cyan-400"></i>
-                    <h2 class="font-orbitron font-bold text-base sm:text-lg text-cyan-400">PAINEL DE MÍDIA & AR</h2>
-                </div>
-                <button id="btn-close-settings" class="text-gray-400 hover:text-white p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
+const virtualScreen =
+    document.getElementById("virtualScreen");
 
-            <!-- Media Source Selection -->
-            <div class="space-y-3">
-                <label class="text-xs font-bold uppercase tracking-wider text-cyan-300 block">1. Selecionar Vídeo</label>
-                
-                <!-- Demo Presets -->
-                <div class="grid grid-cols-2 gap-2">
-                    <button class="btn-preset-video hud-panel p-2 rounded-lg text-xs text-left hover:border-cyan-400 transition" data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
-                        🎬 Big Buck Bunny (Demo)
-                    </button>
-                    <button class="btn-preset-video hud-panel p-2 rounded-lg text-xs text-left hover:border-cyan-400 transition" data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4">
-                        🚀 Sci-Fi Short (Demo)
-                    </button>
-                </div>
+const content =
+    document.getElementById("content");
 
-                <!-- Custom URL Input -->
-                <div class="flex space-x-2">
-                    <input type="text" id="input-video-url" placeholder="Cole URL de vídeo MP4 / WebM..." class="flex-1 bg-gray-900/90 border border-cyan-500/30 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-400 text-cyan-100">
-                    <button id="btn-load-url" class="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 px-3 py-2 rounded-lg text-xs font-semibold border border-cyan-500/40 transition">
-                        Carregar
-                    </button>
-                </div>
+const close =
+    document.getElementById("close");
 
-                <!-- Local File Upload -->
-                <div>
-                    <label class="block text-[11px] text-gray-400 mb-1">Ou envie do celular (MP4, WebM, MOV):</label>
-                    <input type="file" id="input-file-video" accept="video/mp4,video/webm,video/quicktime" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/20 file:text-cyan-300 hover:file:bg-cyan-500/30 cursor-pointer">
-                </div>
-            </div>
 
-            <!-- Full Video Player Controls -->
-            <div class="border-t border-cyan-500/20 pt-3 space-y-2">
-                <label class="text-xs font-bold uppercase tracking-wider text-cyan-300 block">2. Reprodutor de Vídeo</label>
-                <div class="flex items-center justify-between bg-gray-900/80 p-2.5 rounded-xl border border-cyan-500/20">
-                    <button id="btn-play-pause-modal" class="bg-cyan-500 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-xs hover:bg-cyan-400 transition flex items-center space-x-1">
-                        <i data-lucide="play" class="w-4 h-4 fill-current" id="icon-modal-play"></i>
-                        <span id="txt-play-pause-modal">PLAY</span>
-                    </button>
-                    <button id="btn-mute" class="text-gray-300 hover:text-cyan-400 p-2">
-                        <i data-lucide="volume-2" class="w-4 h-4" id="icon-mute"></i>
-                    </button>
-                    <div class="flex-1 mx-3">
-                        <input type="range" id="seek-bar" min="0" max="100" value="0" class="w-full accent-cyan-400 h-1.5 bg-gray-700 rounded-lg cursor-pointer">
-                    </div>
-                </div>
-            </div>
+// =============================
+// CÂMERA
+// =============================
 
-            <!-- 3D Spatial Adjustments -->
-            <div class="border-t border-cyan-500/20 pt-3 space-y-3">
-                <label class="text-xs font-bold uppercase tracking-wider text-cyan-300 block">3. Posicionamento da Tela 3D</label>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-400">Distância (Eixo Z)</span>
-                            <span id="val-distance" class="text-cyan-400 font-mono">2.5m</span>
-                        </div>
-                        <input type="range" id="range-distance" min="1.0" max="6.0" step="0.1" value="2.5" class="w-full accent-cyan-400 h-1.5 bg-gray-800 rounded-lg cursor-pointer">
-                    </div>
+async function startCamera() {
 
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-400">Altura (Eixo Y)</span>
-                            <span id="val-height" class="text-cyan-400 font-mono">0.0m</span>
-                        </div>
-                        <input type="range" id="range-height" min="-2.0" max="2.0" step="0.1" value="0.0" class="w-full accent-cyan-400 h-1.5 bg-gray-800 rounded-lg cursor-pointer">
-                    </div>
+    try {
 
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-400">Tamanho da Tela</span>
-                            <span id="val-scale" class="text-cyan-400 font-mono">1.0x</span>
-                        </div>
-                        <input type="range" id="range-scale" min="0.5" max="3.0" step="0.1" value="1.0" class="w-full accent-cyan-400 h-1.5 bg-gray-800 rounded-lg cursor-pointer">
-                    </div>
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
 
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-400">Separação IPD (SBS)</span>
-                            <span id="val-ipd" class="text-cyan-400 font-mono">0.00</span>
-                        </div>
-                        <input type="range" id="range-ipd" min="-0.2" max="0.2" step="0.01" value="0.0" class="w-full accent-cyan-400 h-1.5 bg-gray-800 rounded-lg cursor-pointer">
-                    </div>
-
-                    <div class="col-span-2">
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-400">Opacidade da Tela</span>
-                            <span id="val-opacity" class="text-cyan-400 font-mono">95%</span>
-                        </div>
-                        <input type="range" id="range-opacity" min="0.2" max="1.0" step="0.05" value="0.95" class="w-full accent-cyan-400 h-1.5 bg-gray-800 rounded-lg cursor-pointer">
-                    </div>
-                </div>
-            </div>
-
-            <button id="btn-save-settings" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-bold rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-cyan-500/20">
-                Concluir & Voltar ao Óculos
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
-
-        // Application State
-        const state = {
-            isSBS: true, // Default to dual SBS mode for glasses
-            isPassThrough: true,
-            isTracking: true,
-            isMuted: false,
-            distance: 2.5,
-            height: 0.0,
-            scale: 1.0,
-            opacity: 0.95,
-            ipd: 0.0,
-            isPlaying: false,
-            videoSource: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-            gyro: { alpha: 0, beta: 0, gamma: 0, baseYaw: 0, basePitch: 0 }
-        };
-
-        // DOM Elements
-        const cameraFeed = document.getElementById('camera-feed');
-        const arVideoSource = document.getElementById('ar-video-source');
-        const viewportLeft = document.getElementById('viewport-left');
-        const viewportRight = document.getElementById('viewport-right');
-        const vrDivider = document.getElementById('vr-divider');
-        const uiOverlay = document.getElementById('ui-overlay');
-        const modalWelcome = document.getElementById('modal-welcome');
-        const modalSettings = document.getElementById('modal-settings');
-        const toast = document.getElementById('toast-message');
-        const statusIndicator = document.getElementById('status-indicator');
-        const statusModeText = document.getElementById('status-mode');
-
-        // Three.js Core Variables
-        let scene, cameraLeft, cameraRight, rendererLeft, rendererRight;
-        let screenMesh, hudMeshGroup, videoTexture, gridHelper;
-
-        function initThreeEngine() {
-            scene = new THREE.Scene();
-
-            const aspect = viewportLeft.clientWidth / viewportLeft.clientHeight;
-            cameraLeft = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
-            cameraRight = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
-
-            cameraLeft.position.set(-state.ipd, 0, 0);
-            cameraRight.position.set(state.ipd, 0, 0);
-
-            // Left Renderer
-            rendererLeft = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            rendererLeft.setSize(viewportLeft.clientWidth, viewportLeft.clientHeight);
-            rendererLeft.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            rendererLeft.domElement.classList.add('webgl-canvas');
-            viewportLeft.appendChild(rendererLeft.domElement);
-
-            // Right Renderer
-            rendererRight = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            rendererRight.setSize(viewportLeft.clientWidth, viewportLeft.clientHeight);
-            rendererRight.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            rendererRight.domElement.classList.add('webgl-canvas');
-            viewportRight.appendChild(rendererRight.domElement);
-
-            // Video Texture Setup
-            arVideoSource.src = state.videoSource;
-            arVideoSource.load();
-
-            videoTexture = new THREE.VideoTexture(arVideoSource);
-            videoTexture.minFilter = THREE.LinearFilter;
-            videoTexture.magFilter = THREE.LinearFilter;
-            videoTexture.format = THREE.RGBAFormat;
-
-            // Main Rotating Group for Head Tracking
-            hudMeshGroup = new THREE.Group();
-            scene.add(hudMeshGroup);
-
-            // 3D Floating Screen Geometry
-            const screenGeo = new THREE.PlaneGeometry(3.2, 1.8);
-            const screenMat = new THREE.MeshBasicMaterial({
-                map: videoTexture,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: state.opacity
-            });
-
-            screenMesh = new THREE.Mesh(screenGeo, screenMat);
-            screenMesh.position.set(0, state.height, -state.distance);
-            hudMeshGroup.add(screenMesh);
-
-            // Cyberpunk Frame Outline
-            const frameGeo = new THREE.PlaneGeometry(3.28, 1.88);
-            const frameMat = new THREE.MeshBasicMaterial({
-                color: 0x00f0ff,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.35
-            });
-            const frameMesh = new THREE.Mesh(frameGeo, frameMat);
-            frameMesh.position.set(0, state.height, -state.distance - 0.01);
-            hudMeshGroup.add(frameMesh);
-
-            // VR Fallback Grid (Shown when camera is off or blocked)
-            gridHelper = new THREE.GridHelper(30, 30, 0x00f0ff, 0x1e293b);
-            gridHelper.position.y = -3;
-            scene.add(gridHelper);
-
-            // Ambient Light
-            scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        function onWindowResize() {
-            const width = viewportLeft.clientWidth;
-            const height = viewportLeft.clientHeight;
-
-            if (width > 0 && height > 0) {
-                cameraLeft.aspect = width / height;
-                cameraLeft.updateProjectionMatrix();
-
-                cameraRight.aspect = width / height;
-                cameraRight.updateProjectionMatrix();
-
-                rendererLeft.setSize(width, height);
-                rendererRight.setSize(width, height);
-            }
-        }
-
-        async function requestPermissionsAndStart() {
-            modalWelcome.classList.add('opacity-0', 'pointer-events-none');
-
-            // 1. Request Camera Access
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: "environment" } },
-                    audio: false
-                }).catch(() => {
-                    // Fallback to default front camera if environment rear camera fails
-                    return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                });
-
-                cameraFeed.srcObject = stream;
-                cameraFeed.style.opacity = '1';
-                state.isPassThrough = true;
-                setModeDisplay(true);
-                showToast("Câmera AR Pass-Through Ativada!");
-            } catch (cameraError) {
-                console.warn("Câmera bloqueada ou indisponível:", cameraError);
-                state.isPassThrough = false;
-                setModeDisplay(false);
-                showToast("Modo VR Escuro Ativado (Sem Câmera)");
-            }
-
-            // 2. Request Gyroscope / Motion Sensor Access
-            if (typeof DeviceOrientationEvent !== 'undefined') {
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    // iOS 13+ devices requirement
-                    try {
-                        const permission = await DeviceOrientationEvent.requestPermission();
-                        if (permission === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                            showToast("Giroscópio Ativado");
-                        }
-                    } catch (e) {
-                        console.warn("Permissão de Giroscópio recusada:", e);
+                video: {
+                    facingMode: {
+                        ideal: "environment"
                     }
-                } else {
-                    // Android & standard Web Browsers
-                    window.addEventListener('deviceorientation', handleOrientation);
-                }
-            }
+                },
 
-            // Play video automatically on user gesture
-            arVideoSource.play().then(() => {
-                state.isPlaying = true;
-                updatePlayButtons(true);
-            }).catch(e => console.log("Autoplay bloqueado:", e));
-        }
+                audio: false
 
-        function setModeDisplay(isPassThrough) {
-            if (isPassThrough) {
-                statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-                statusModeText.className = "text-[9px] font-mono text-emerald-400 tracking-wider";
-                statusModeText.textContent = "MODO AR PASS-THROUGH";
-                gridHelper.visible = false;
-            } else {
-                statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse";
-                statusModeText.className = "text-[9px] font-mono text-cyan-400 tracking-wider";
-                statusModeText.textContent = "MODO VR (GRID ESCURO)";
-                gridHelper.visible = true;
-            }
-        }
-
-        function handleOrientation(e) {
-            if (!state.isTracking) return;
-
-            const alpha = e.alpha ? THREE.MathUtils.degToRad(e.alpha) : 0; // Yaw (Z-axis)
-            const beta = e.beta ? THREE.MathUtils.degToRad(e.beta) : 0;   // Pitch (X-axis)
-
-            if (state.gyro.baseYaw === 0) {
-                state.gyro.baseYaw = alpha;
-                state.gyro.basePitch = beta;
-            }
-
-            // Apply smooth rotation relative to calibration point
-            hudMeshGroup.rotation.y = -(alpha - state.gyro.baseYaw);
-            hudMeshGroup.rotation.x = (beta - state.gyro.basePitch) * 0.5;
-        }
-
-        function recenterVision() {
-            state.gyro.baseYaw = state.gyro.alpha || 0;
-            state.gyro.basePitch = state.gyro.beta || 0;
-            hudMeshGroup.rotation.set(0, 0, 0);
-            showToast("Visão Recalibrada para o Centro");
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Dynamically update screen mesh properties
-            if (screenMesh) {
-                screenMesh.position.z = -state.distance;
-                screenMesh.position.y = state.height;
-                screenMesh.scale.set(state.scale, state.scale, 1);
-                screenMesh.material.opacity = state.opacity;
-            }
-
-            // Update Stereo IPD Separation
-            cameraLeft.position.x = -state.ipd;
-            cameraRight.position.x = state.ipd;
-
-            // Render Views
-            rendererLeft.render(scene, cameraLeft);
-            if (state.isSBS) {
-                rendererRight.render(scene, cameraRight);
-            }
-
-            // Update UI timer
-            if (arVideoSource && !arVideoSource.paused) {
-                const cur = Math.floor(arVideoSource.currentTime);
-                const min = Math.floor(cur / 60).toString().padStart(2, '0');
-                const sec = (cur % 60).toString().padStart(2, '0');
-                document.getElementById('hud-timer').textContent = `${min}:${sec}`;
-            }
-        }
-
-        function showToast(msg) {
-            toast.textContent = msg;
-            toast.style.opacity = '1';
-            setTimeout(() => {
-                toast.style.opacity = '0';
-            }, 2500);
-        }
-
-        function updatePlayButtons(isPlaying) {
-            const iconHud = document.getElementById('icon-hud-play');
-            const iconModal = document.getElementById('icon-modal-play');
-            const txtModal = document.getElementById('txt-play-pause-modal');
-
-            if (isPlaying) {
-                iconHud.setAttribute('data-lucide', 'pause');
-                iconModal.setAttribute('data-lucide', 'pause');
-                txtModal.textContent = "PAUSE";
-            } else {
-                iconHud.setAttribute('data-lucide', 'play');
-                iconModal.setAttribute('data-lucide', 'play');
-                txtModal.textContent = "PLAY";
-            }
-            lucide.createIcons();
-        }
-
-        function togglePlayPause() {
-            if (arVideoSource.paused) {
-                arVideoSource.play();
-                state.isPlaying = true;
-                updatePlayButtons(true);
-            } else {
-                arVideoSource.pause();
-                state.isPlaying = false;
-                updatePlayButtons(false);
-            }
-        }
-
-        // Master Start Button Click (Activates browser features under touch event)
-        document.getElementById('btn-start-ar').addEventListener('click', requestPermissionsAndStart);
-
-        // Toggle Single / SBS Mode
-        document.getElementById('btn-toggle-sbs').addEventListener('click', () => {
-            state.isSBS = !state.isSBS;
-            if (state.isSBS) {
-                viewportRight.classList.remove('hidden');
-                vrDivider.classList.remove('hidden');
-                showToast("Modo SBS (Óculos) Ativo");
-            } else {
-                viewportRight.classList.add('hidden');
-                vrDivider.classList.add('hidden');
-                showToast("Modo Tela Única Ativo");
-            }
-            onWindowResize();
-        });
-
-        // Camera Pass-Through Toggle
-        document.getElementById('btn-toggle-camera').addEventListener('click', async () => {
-            if (state.isPassThrough) {
-                if (cameraFeed.srcObject) {
-                    cameraFeed.srcObject.getTracks().forEach(track => track.stop());
-                    cameraFeed.srcObject = null;
-                }
-                cameraFeed.style.opacity = '0';
-                state.isPassThrough = false;
-                setModeDisplay(false);
-                showToast("Câmera Desativada - Modo VR Escuro");
-            } else {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: { exact: "environment" } },
-                        audio: false
-                    }).catch(() => navigator.mediaDevices.getUserMedia({ video: true, audio: false }));
-
-                    cameraFeed.srcObject = stream;
-                    cameraFeed.style.opacity = '1';
-                    state.isPassThrough = true;
-                    setModeDisplay(true);
-                    showToast("Câmera AR Reativada");
-                } catch (e) {
-                    showToast("Câmera inacessível ou bloqueada");
-                }
-            }
-        });
-
-        // Recenter / Recalibrate Vision
-        document.getElementById('btn-recenter').addEventListener('click', recenterVision);
-
-        // Toggle Head Tracking
-        document.getElementById('btn-toggle-gyro').addEventListener('click', () => {
-            state.isTracking = !state.isTracking;
-            document.getElementById('txt-gyro-mode').textContent = state.isTracking ? "GIROSCÓPIO: ON" : "GIROSCÓPIO: OFF";
-            if (!state.isTracking) hudMeshGroup.rotation.set(0, 0, 0);
-            showToast(state.isTracking ? "Head Tracking Ativado" : "Tela Fixa no HUD");
-        });
-
-        // Fullscreen Toggle
-        document.getElementById('btn-fullscreen').addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => showToast("Fullscreen bloqueado"));
-            } else {
-                document.exitFullscreen();
-            }
-        });
-
-        // Modal Settings Toggles
-        document.getElementById('btn-open-settings').addEventListener('click', () => {
-            modalSettings.classList.remove('opacity-0', 'pointer-events-none');
-        });
-        document.getElementById('btn-close-settings').addEventListener('click', () => {
-            modalSettings.classList.add('opacity-0', 'pointer-events-none');
-        });
-        document.getElementById('btn-save-settings').addEventListener('click', () => {
-            modalSettings.classList.add('opacity-0', 'pointer-events-none');
-        });
-
-        // Video Controls
-        document.getElementById('btn-play-pause-hud').addEventListener('click', togglePlayPause);
-        document.getElementById('btn-play-pause-modal').addEventListener('click', togglePlayPause);
-
-        document.getElementById('btn-mute').addEventListener('click', () => {
-            state.isMuted = !state.isMuted;
-            arVideoSource.muted = state.isMuted;
-            const iconMute = document.getElementById('icon-mute');
-            iconMute.setAttribute('data-lucide', state.isMuted ? 'volume-x' : 'volume-2');
-            lucide.createIcons();
-        });
-
-        // Video Progress Sync
-        const seekBar = document.getElementById('seek-bar');
-        arVideoSource.addEventListener('timeupdate', () => {
-            if (arVideoSource.duration) {
-                seekBar.value = (arVideoSource.currentTime / arVideoSource.duration) * 100;
-            }
-        });
-        seekBar.addEventListener('input', () => {
-            if (arVideoSource.duration) {
-                arVideoSource.currentTime = (seekBar.value / 100) * arVideoSource.duration;
-            }
-        });
-
-        // Load Preset Videos
-        document.querySelectorAll('.btn-preset-video').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const url = e.currentTarget.getAttribute('data-url');
-                arVideoSource.src = url;
-                arVideoSource.play();
-                updatePlayButtons(true);
-                showToast("Vídeo de demonstração carregado");
             });
-        });
 
-        // Custom Video URL
-        document.getElementById('btn-load-url').addEventListener('click', () => {
-            const url = document.getElementById('input-video-url').value.trim();
-            if (url) {
-                arVideoSource.src = url;
-                arVideoSource.play();
-                updatePlayButtons(true);
-                showToast("Nova fonte de vídeo carregada");
-            }
-        });
+        camera.srcObject = stream;
 
-        // Local Video File Upload
-        document.getElementById('input-file-video').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                arVideoSource.src = URL.createObjectURL(file);
-                arVideoSource.play();
-                updatePlayButtons(true);
-                showToast("Arquivo local carregado com sucesso");
-            }
-        });
+    } catch (error) {
 
-        // Spatial Sliders
-        document.getElementById('range-distance').addEventListener('input', (e) => {
-            state.distance = parseFloat(e.target.value);
-            document.getElementById('val-distance').textContent = `${state.distance.toFixed(1)}m`;
-        });
+        alert(
+            "Não foi possível acessar a câmera."
+        );
 
-        document.getElementById('range-height').addEventListener('input', (e) => {
-            state.height = parseFloat(e.target.value);
-            document.getElementById('val-height').textContent = `${state.height.toFixed(1)}m`;
-        });
+        console.error(error);
+    }
+}
 
-        document.getElementById('range-scale').addEventListener('input', (e) => {
-            state.scale = parseFloat(e.target.value);
-            document.getElementById('val-scale').textContent = `${state.scale.toFixed(1)}x`;
-        });
 
-        document.getElementById('range-ipd').addEventListener('input', (e) => {
-            state.ipd = parseFloat(e.target.value);
-            document.getElementById('val-ipd').textContent = state.ipd.toFixed(2);
-        });
+// =============================
+// ABRIR SITE
+// =============================
 
-        document.getElementById('range-opacity').addEventListener('input', (e) => {
-            state.opacity = parseFloat(e.target.value);
-            document.getElementById('val-opacity').textContent = `${Math.round(state.opacity * 100)}%`;
-        });
+function openURL() {
 
-        // Auto-Hide HUD UI when clicking canvas background
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#ui-overlay') || e.target.closest('#modal-settings') || e.target.closest('#modal-welcome')) {
-                return;
-            }
-            uiOverlay.classList.toggle('ui-hidden');
-        });
+    let url =
+        document.getElementById("urlInput").value;
 
-        // Window Load Initialization
-        window.onload = () => {
-            initThreeEngine();
-            animate();
-        };
-    </script>
+    if (!url)
+        return;
+
+    if (!url.startsWith("http"))
+        url = "https://" + url;
+
+    content.src = url;
+}
+
+
+// =============================
+// FECHAR TELA
+// =============================
+
+close.onclick = function() {
+
+    virtualScreen.style.display = "none";
+
+};
+
+
+// =============================
+// CAPTURAR TELA
+// =============================
+
+async function captureScreen() {
+
+    try {
+
+        const stream =
+            await navigator.mediaDevices.getDisplayMedia({
+
+                video: true,
+
+                audio: false
+
+            });
+
+        content.srcObject = stream;
+
+        /*
+        Alguns navegadores não permitem
+        colocar MediaStream diretamente
+        em iframe.
+
+        Por isso esta função é experimental.
+        */
+
+    } catch (error) {
+
+        console.log(
+            "Captura cancelada."
+        );
+
+    }
+
+}
+
+
+// =============================
+// ARRASTAR TELA
+// =============================
+
+const header =
+    document.getElementById("screenHeader");
+
+let dragging = false;
+
+let offsetX = 0;
+let offsetY = 0;
+
+
+header.addEventListener(
+    "pointerdown",
+    startDrag
+);
+
+function startDrag(e) {
+
+    dragging = true;
+
+    const rect =
+        virtualScreen.getBoundingClientRect();
+
+    offsetX =
+        e.clientX - rect.left;
+
+    offsetY =
+        e.clientY - rect.top;
+
+    header.setPointerCapture(
+        e.pointerId
+    );
+}
+
+
+header.addEventListener(
+    "pointermove",
+    e => {
+
+        if (!dragging)
+            return;
+
+        virtualScreen.style.left =
+            (e.clientX - offsetX) + "px";
+
+        virtualScreen.style.top =
+            (e.clientY - offsetY) + "px";
+
+        virtualScreen.style.transform =
+            "none";
+
+    }
+);
+
+
+header.addEventListener(
+    "pointerup",
+    () => {
+
+        dragging = false;
+
+    }
+);
+
+
+// =============================
+// INICIAR
+// =============================
+
+startCamera();
+
+</script>
+
 </body>
 </html>
+```
