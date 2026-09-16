@@ -6,41 +6,44 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width,
-    initial-scale=1.0,
-    maximum-scale=1.0,
-    user-scalable=no"
->
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
 
 <title>AR Glasses</title>
 
 <style>
 
+/* ================================
+   BASE
+================================ */
+
 * {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
 }
 
 html,
 body {
-    margin: 0;
+
     width: 100%;
     height: 100%;
+
+    margin: 0;
+
     overflow: hidden;
 
     background: #000;
 
     font-family: Arial, sans-serif;
 
-    color: white;
 }
 
 
-/* =====================================
+/* ================================
    CÂMERA
-===================================== */
+================================ */
 
 #camera {
 
@@ -53,82 +56,56 @@ body {
 
     object-fit: cover;
 
+    z-index: 1;
+
     background: #000;
 
-    z-index: 1;
 }
 
 
-/* =====================================
-   MIRA
-===================================== */
+/* ================================
+   TELA AR
+================================ */
 
-#crosshair {
-
-    position: fixed;
-
-    left: 50%;
-    top: 50%;
-
-    width: 10px;
-    height: 10px;
-
-    transform: translate(-50%, -50%);
-
-    border: 1px solid rgba(0,255,255,.8);
-
-    border-radius: 50%;
-
-    z-index: 2;
-
-    pointer-events: none;
-}
-
-
-/* =====================================
-   TELA VIRTUAL
-===================================== */
-
-#virtualScreen {
+#arScreen {
 
     position: fixed;
-
-    left: 50%;
-    top: 50%;
 
     width: 320px;
     height: 220px;
 
-    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
 
-    background: rgba(10,10,15,.94);
+    transform:
+        translate(-50%, -50%);
 
-    border: 2px solid #00ffff;
+    z-index: 10;
+
+    background:
+        rgba(10,10,15,.92);
+
+    border:
+        2px solid #00ffff;
 
     border-radius: 12px;
 
+    box-shadow:
+        0 0 25px
+        rgba(0,255,255,.6);
+
     overflow: hidden;
 
-    z-index: 5;
-
-    box-shadow:
-        0 0 20px rgba(0,255,255,.5),
-        0 0 50px rgba(0,255,255,.15);
-
-    resize: both;
-
-    min-width: 220px;
-    min-height: 150px;
 }
 
 
-/* =====================================
+/* ================================
    CABEÇALHO
-===================================== */
+================================ */
 
-#screenHeader {
+#header {
 
-    height: 36px;
+    height: 40px;
 
     display: flex;
 
@@ -136,23 +113,13 @@ body {
 
     justify-content: space-between;
 
-    padding: 0 8px;
+    padding: 0 10px;
 
-    background: rgba(0,0,0,.9);
+    background:
+        rgba(0,0,0,.9);
 
-    border-bottom: 1px solid #00ffff;
-
-    cursor: grab;
-
-    touch-action: none;
-}
-
-#screenHeader:active {
-    cursor: grabbing;
-}
-
-
-#screenTitle {
+    border-bottom:
+        1px solid #00ffff;
 
     color: #00ffff;
 
@@ -160,7 +127,8 @@ body {
 
     font-weight: bold;
 
-    letter-spacing: 1px;
+    touch-action: none;
+
 }
 
 
@@ -171,7 +139,7 @@ body {
 
     padding: 0;
 
-    border: 0;
+    border: none;
 
     background: transparent;
 
@@ -179,209 +147,131 @@ body {
 
     font-size: 22px;
 
-    cursor: pointer;
 }
 
 
-/* =====================================
+/* ================================
    CONTEÚDO
-===================================== */
+================================ */
 
-#content {
+#screenContent {
 
-    width: 100%;
-    height: calc(100% - 36px);
-
-    border: 0;
-
-    background: white;
-}
-
-
-/* Vídeo da tela capturada */
-
-#screenCapture {
-
-    width: 100%;
-    height: calc(100% - 36px);
-
-    object-fit: contain;
-
-    background: #000;
-
-    display: none;
-}
-
-
-/* =====================================
-   MENU
-===================================== */
-
-#menu {
-
-    position: fixed;
-
-    left: 50%;
-    bottom: 18px;
-
-    transform: translateX(-50%);
-
-    z-index: 20;
+    height:
+        calc(100% - 40px);
 
     display: flex;
 
     align-items: center;
 
-    gap: 7px;
+    justify-content: center;
 
-    padding: 9px;
+    flex-direction: column;
 
-    max-width: calc(100% - 20px);
+    gap: 12px;
 
-    background: rgba(0,0,0,.78);
+    color: white;
 
-    border: 1px solid rgba(255,255,255,.15);
+    text-align: center;
+
+}
+
+
+/* ================================
+   MENU
+================================ */
+
+#controls {
+
+    position: fixed;
+
+    left: 50%;
+
+    bottom: 20px;
+
+    transform:
+        translateX(-50%);
+
+    z-index: 20;
+
+    display: flex;
+
+    gap: 8px;
+
+    padding: 10px;
+
+    background:
+        rgba(0,0,0,.8);
+
+    border:
+        1px solid
+        rgba(255,255,255,.2);
 
     border-radius: 14px;
 
-    backdrop-filter: blur(12px);
-
-    -webkit-backdrop-filter: blur(12px);
 }
 
 
-/* =====================================
-   INPUT
-===================================== */
-
-#urlInput {
-
-    width: 150px;
-
-    height: 38px;
-
-    padding: 0 10px;
-
-    border: 1px solid #444;
-
-    border-radius: 8px;
-
-    outline: none;
-
-    background: #111;
-
-    color: white;
-
-    font-size: 12px;
-}
-
-
-/* =====================================
+/* ================================
    BOTÕES
-===================================== */
+================================ */
 
 button {
 
-    height: 38px;
+    appearance: none;
 
-    padding: 0 12px;
+    -webkit-appearance: none;
 
     border: 1px solid #00ffff;
-
-    border-radius: 8px;
 
     background: #111;
 
     color: white;
+
+    border-radius: 8px;
+
+    padding: 10px 14px;
 
     font-size: 12px;
 
     cursor: pointer;
 
-    white-space: nowrap;
-
-    touch-action: manipulation;
 }
 
 
 button:active {
 
-    transform: scale(.96);
+    transform: scale(.95);
 
 }
 
 
-button:hover {
-
-    background: #00ffff;
-
-    color: #000;
-}
-
-
-/* =====================================
+/* ================================
    STATUS
-===================================== */
+================================ */
 
 #status {
 
     position: fixed;
 
     top: 15px;
+
     left: 50%;
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
     z-index: 30;
 
     padding: 8px 12px;
 
+    background:
+        rgba(0,0,0,.75);
+
+    color: white;
+
     border-radius: 8px;
 
-    background: rgba(0,0,0,.7);
-
-    font-size: 11px;
-
-    opacity: 0;
-
-    transition: opacity .3s;
-
-    pointer-events: none;
-}
-
-
-#status.show {
-
-    opacity: 1;
-}
-
-
-/* =====================================
-   CELULAR
-===================================== */
-
-@media (max-width: 600px) {
-
-    #menu {
-
-        flex-wrap: wrap;
-
-        justify-content: center;
-
-    }
-
-    #urlInput {
-
-        width: 140px;
-
-    }
-
-    #virtualScreen {
-
-        width: 290px;
-        height: 200px;
-
-    }
+    font-size: 12px;
 
 }
 
@@ -393,113 +283,96 @@ button:hover {
 <body>
 
 
-<!-- =====================================
+<!-- ================================
      CÂMERA
-===================================== -->
+================================ -->
 
 <video
     id="camera"
     autoplay
     playsinline
-    muted
-></video>
+    muted>
+</video>
 
 
-<!-- =====================================
-     MIRA
-===================================== -->
-
-<div id="crosshair"></div>
-
-
-<!-- =====================================
+<!-- ================================
      STATUS
-===================================== -->
+================================ -->
 
-<div id="status"></div>
+<div id="status">
+
+    Iniciando câmera...
+
+</div>
 
 
-<!-- =====================================
+<!-- ================================
      TELA VIRTUAL
-===================================== -->
+================================ -->
 
-<div id="virtualScreen">
+<div id="arScreen">
 
 
-    <div id="screenHeader">
+    <div id="header">
 
-        <span id="screenTitle">
+        <span>
             AR SCREEN
         </span>
 
+
         <button
             type="button"
-            id="close"
-        >
+            id="close">
+
             ×
+
         </button>
 
     </div>
 
 
-    <!-- Conteúdo de sites -->
+    <div id="screenContent">
 
-    <iframe
-        id="content"
-        src="about:blank"
-        allow="fullscreen"
-    ></iframe>
+        <strong>
+            TELA VIRTUAL
+        </strong>
 
+        <span>
+            Esta é sua primeira tela AR.
+        </span>
 
-    <!-- Conteúdo da captura -->
+        <span>
+            Arraste pelo cabeçalho.
+        </span>
 
-    <video
-        id="screenCapture"
-        autoplay
-        playsinline
-        muted
-    ></video>
+    </div>
 
 
 </div>
 
 
-<!-- =====================================
-     MENU
-===================================== -->
+<!-- ================================
+     CONTROLES
+================================ -->
 
-<div id="menu">
-
-
-    <button
-        type="button"
-        id="cameraButton"
-    >
-        📷 AR
-    </button>
-
-
-    <input
-        id="urlInput"
-        type="url"
-        placeholder="https://site.com"
-        autocomplete="off"
-    >
+<div id="controls">
 
 
     <button
         type="button"
-        id="openButton"
-    >
-        Abrir
+        id="cameraButton">
+
+        📷 Câmera
+
     </button>
 
 
     <button
         type="button"
-        id="captureButton"
-    >
-        📱 Tela
+        id="newScreen">
+
+        ＋ Tela
+
     </button>
 
 
@@ -508,309 +381,164 @@ button:hover {
 
 <script>
 
-
-/* =====================================
+/* =================================
    ELEMENTOS
-===================================== */
+================================= */
 
 const camera =
-    document.getElementById("camera");
+    document.getElementById(
+        "camera"
+    );
 
-const virtualScreen =
-    document.getElementById("virtualScreen");
-
-const content =
-    document.getElementById("content");
-
-const screenCapture =
-    document.getElementById("screenCapture");
-
-const closeButton =
-    document.getElementById("close");
-
-const cameraButton =
-    document.getElementById("cameraButton");
-
-const openButton =
-    document.getElementById("openButton");
-
-const captureButton =
-    document.getElementById("captureButton");
-
-const urlInput =
-    document.getElementById("urlInput");
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
 
-/* =====================================
-   STATUS
-===================================== */
-
-let statusTimer;
-
-
-function showStatus(message) {
-
-    status.textContent = message;
-
-    status.classList.add("show");
-
-    clearTimeout(statusTimer);
-
-    statusTimer = setTimeout(() => {
-
-        status.classList.remove("show");
-
-    }, 2500);
-}
+const arScreen =
+    document.getElementById(
+        "arScreen"
+    );
 
 
-/* =====================================
+const close =
+    document.getElementById(
+        "close"
+    );
+
+
+const cameraButton =
+    document.getElementById(
+        "cameraButton"
+    );
+
+
+const newScreen =
+    document.getElementById(
+        "newScreen"
+    );
+
+
+/* =================================
    CÂMERA
-===================================== */
+================================= */
 
 async function startCamera() {
 
     try {
 
-        if (!navigator.mediaDevices ||
-            !navigator.mediaDevices.getUserMedia) {
-
-            showStatus(
-                "Seu navegador não suporta câmera."
-            );
-
-            return;
-        }
-
-
         const stream =
-            await navigator.mediaDevices.getUserMedia({
+            await navigator
+                .mediaDevices
+                .getUserMedia({
 
-                video: {
+                    video: {
 
-                    facingMode: {
-                        ideal: "environment"
-                    }
+                        facingMode: {
+                            ideal: "environment"
+                        }
 
-                },
-
-                audio: false
-
-            });
-
-
-        camera.srcObject = stream;
-
-        showStatus("Câmera AR ativada.");
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        showStatus(
-            "Permissão da câmera recusada."
-        );
-
-    }
-
-}
-
-
-/* =====================================
-   ABRIR SITE
-===================================== */
-
-function openURL() {
-
-    let url =
-        urlInput.value.trim();
-
-
-    if (!url) {
-
-        showStatus(
-            "Digite uma URL."
-        );
-
-        return;
-    }
-
-
-    if (
-        !url.startsWith("http://") &&
-        !url.startsWith("https://")
-    ) {
-
-        url =
-            "https://" + url;
-
-    }
-
-
-    /*
-       Mostra o iframe
-       e esconde a captura
-    */
-
-    content.style.display =
-        "block";
-
-    screenCapture.style.display =
-        "none";
-
-
-    content.src = url;
-
-
-    virtualScreen.style.display =
-        "block";
-
-
-    showStatus(
-        "Página carregada na tela AR."
-    );
-
-}
-
-
-/* =====================================
-   CAPTURA DE TELA
-===================================== */
-
-async function captureScreen() {
-
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getDisplayMedia) {
-
-        showStatus(
-            "Seu navegador não permite captura de tela."
-        );
-
-        return;
-    }
-
-
-    try {
-
-        /*
-           IMPORTANTE:
-
-           O navegador vai abrir a própria
-           janela de seleção de tela.
-
-           Isso não deve ser colocado
-           dentro de um iframe.
-        */
-
-        const stream =
-            await navigator.mediaDevices
-                .getDisplayMedia({
-
-                    video: true,
+                    },
 
                     audio: false
 
                 });
 
 
-        /*
-           Coloca a captura no vídeo
-        */
-
-        screenCapture.srcObject =
+        camera.srcObject =
             stream;
 
 
-        content.style.display =
-            "none";
-
-        screenCapture.style.display =
-            "block";
+        status.textContent =
+            "Câmera ativada";
 
 
-        virtualScreen.style.display =
-            "block";
+        setTimeout(() => {
+
+            status.style.display =
+                "none";
+
+        }, 2000);
 
 
-        showStatus(
-            "Tela compartilhada."
-        );
+    } catch (error) {
 
+        console.error(error);
 
-        /*
-           Se o usuário parar o compartilhamento
-        */
-
-        const tracks =
-            stream.getVideoTracks();
-
-
-        if (tracks.length > 0) {
-
-            tracks[0].addEventListener(
-                "ended",
-                () => {
-
-                    screenCapture.srcObject =
-                        null;
-
-                    screenCapture.style.display =
-                        "none";
-
-                    content.style.display =
-                        "block";
-
-                    showStatus(
-                        "Compartilhamento encerrado."
-                    );
-
-                }
-            );
-
-        }
-
-    }
-
-    catch (error) {
-
-        console.log(error);
-
-        showStatus(
-            "Captura cancelada."
-        );
+        status.textContent =
+            "Não foi possível acessar a câmera.";
 
     }
 
 }
 
 
-/* =====================================
+/* =================================
    FECHAR TELA
-===================================== */
+================================= */
 
-closeButton.addEventListener(
+close.addEventListener(
     "click",
-    () => {
+    function(event) {
 
-        virtualScreen.style.display =
+        event.preventDefault();
+
+        event.stopPropagation();
+
+        arScreen.style.display =
             "none";
 
     }
 );
 
 
-/* =====================================
+/* =================================
+   NOVA TELA
+================================= */
+
+newScreen.addEventListener(
+    "click",
+    function(event) {
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+
+        arScreen.style.display =
+            "block";
+
+
+        /*
+         * Reposiciona no centro
+         */
+
+        arScreen.style.left =
+            "50%";
+
+        arScreen.style.top =
+            "50%";
+
+        arScreen.style.transform =
+            "translate(-50%, -50%)";
+
+    }
+);
+
+
+/* =================================
    BOTÃO CÂMERA
-===================================== */
+================================= */
 
 cameraButton.addEventListener(
     "click",
-    () => {
+    function(event) {
+
+        event.preventDefault();
+
+        event.stopPropagation();
 
         startCamera();
 
@@ -818,86 +546,43 @@ cameraButton.addEventListener(
 );
 
 
-/* =====================================
-   BOTÃO ABRIR
-===================================== */
-
-openButton.addEventListener(
-    "click",
-    () => {
-
-        openURL();
-
-    }
-);
-
-
-/* =====================================
-   ENTER NA URL
-===================================== */
-
-urlInput.addEventListener(
-    "keydown",
-    event => {
-
-        if (event.key === "Enter") {
-
-            event.preventDefault();
-
-            openURL();
-
-        }
-
-    }
-);
-
-
-/* =====================================
-   CAPTURA
-===================================== */
-
-captureButton.addEventListener(
-    "click",
-    () => {
-
-        captureScreen();
-
-    }
-);
-
-
-/* =====================================
+/* =================================
    ARRASTAR TELA
-===================================== */
+================================= */
+
+const header =
+    document.getElementById(
+        "header"
+    );
+
 
 let dragging = false;
 
 let offsetX = 0;
+
 let offsetY = 0;
-
-
-const header =
-    document.getElementById("screenHeader");
 
 
 header.addEventListener(
     "pointerdown",
-    event => {
+    function(event) {
 
         dragging = true;
 
 
         const rect =
-            virtualScreen
+            arScreen
                 .getBoundingClientRect();
 
 
         offsetX =
-            event.clientX - rect.left;
+            event.clientX -
+            rect.left;
 
 
         offsetY =
-            event.clientY - rect.top;
+            event.clientY -
+            rect.top;
 
 
         header.setPointerCapture(
@@ -910,21 +595,27 @@ header.addEventListener(
 
 header.addEventListener(
     "pointermove",
-    event => {
+    function(event) {
 
         if (!dragging)
             return;
 
 
-        virtualScreen.style.left =
-            (event.clientX - offsetX) + "px";
+        arScreen.style.left =
+            (
+                event.clientX -
+                offsetX
+            ) + "px";
 
 
-        virtualScreen.style.top =
-            (event.clientY - offsetY) + "px";
+        arScreen.style.top =
+            (
+                event.clientY -
+                offsetY
+            ) + "px";
 
 
-        virtualScreen.style.transform =
+        arScreen.style.transform =
             "none";
 
     }
@@ -933,7 +624,7 @@ header.addEventListener(
 
 header.addEventListener(
     "pointerup",
-    () => {
+    function() {
 
         dragging = false;
 
@@ -943,7 +634,7 @@ header.addEventListener(
 
 header.addEventListener(
     "pointercancel",
-    () => {
+    function() {
 
         dragging = false;
 
@@ -951,14 +642,13 @@ header.addEventListener(
 );
 
 
-/* =====================================
+/* =================================
    INICIAR
-===================================== */
+================================= */
 
 startCamera();
 
 </script>
-
 
 </body>
 
