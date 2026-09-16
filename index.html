@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="utf-8">
 
   <meta
@@ -8,12 +10,20 @@
     content="width=device-width, initial-scale=1, user-scalable=no"
   >
 
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta
+    name="mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
 
   <title>AR YouTube Cinema</title>
 
   <style>
+
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -21,440 +31,581 @@
 
     html,
     body {
+
       margin: 0;
       padding: 0;
+
       width: 100%;
       height: 100%;
+
       overflow: hidden;
+
       background: #000;
-      font-family: Arial, sans-serif;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     }
+
+
+    /* =====================================
+       CANVAS AR
+    ===================================== */
 
     canvas {
+
       position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+
+      left: 0;
+      top: 0;
+
+      width: 100vw;
+      height: 100vh;
+
       z-index: 1;
+
     }
 
-    /* =========================
-       PAINEL INICIAL
-    ========================= */
 
-    #ui {
+    /* =====================================
+       MENU
+    ===================================== */
+
+    #menu {
+
       position: fixed;
-      z-index: 20;
+
       left: 50%;
       bottom: 20px;
+
       transform: translateX(-50%);
 
       width: min(92%, 430px);
 
-      background: rgba(15, 15, 15, 0.92);
-      border: 1px solid rgba(255,255,255,.12);
+      padding: 18px;
+
+      background:
+        rgba(15,15,15,.94);
+
+      border:
+        1px solid
+        rgba(255,255,255,.12);
+
       border-radius: 18px;
 
-      padding: 16px;
-
       color: white;
 
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+      z-index: 100;
 
       box-shadow:
-        0 10px 40px rgba(0,0,0,.5);
+        0 15px 50px
+        rgba(0,0,0,.6);
+
+      backdrop-filter:
+        blur(18px);
+
+      -webkit-backdrop-filter:
+        blur(18px);
+
     }
 
-    #ui h1 {
-      margin: 0 0 5px;
-      font-size: 20px;
+
+    #menu h1 {
+
+      margin:
+        0 0 6px;
+
+      font-size: 21px;
+
     }
 
-    #ui p {
-      margin: 0 0 14px;
+
+    #menu p {
+
+      margin:
+        0 0 15px;
+
       font-size: 13px;
+
+      line-height: 1.5;
+
       color: #aaa;
+
     }
+
+
+    /* =====================================
+       INPUT
+    ===================================== */
 
     #youtubeUrl {
-      width: 100%;
-      height: 45px;
 
-      border: 1px solid #333;
+      width: 100%;
+
+      height: 48px;
+
+      padding:
+        0 13px;
+
       border-radius: 10px;
 
-      background: #080808;
-      color: white;
-
-      padding: 0 12px;
+      border:
+        1px solid #333;
 
       outline: none;
 
+      background: #080808;
+
+      color: white;
+
       font-size: 14px;
+
     }
+
 
     #youtubeUrl:focus {
+
       border-color: #777;
+
     }
 
+
+    /* =====================================
+       BOTÕES
+    ===================================== */
+
     button {
-      border: 0;
+
+      border: none;
+
       border-radius: 10px;
 
-      min-height: 45px;
+      min-height: 46px;
 
-      padding: 0 16px;
+      padding:
+        0 16px;
 
       font-size: 14px;
+
       font-weight: 600;
 
       cursor: pointer;
+
     }
 
-    #loadYoutube {
+
+    #loadVideo {
+
       width: 100%;
+
       margin-top: 10px;
 
-      background: white;
-      color: black;
+      background: #292929;
+
+      color: white;
+
     }
 
+
     #startAR {
+
       width: 100%;
+
       margin-top: 10px;
 
       background: #ff0000;
+
       color: white;
+
     }
 
-    button:active {
-      transform: scale(.98);
+
+    #startAR:disabled {
+
+      opacity: .45;
+
+      cursor: not-allowed;
+
     }
 
-    /* =========================
+
+    /* =====================================
        PLAYER YOUTUBE
-    ========================= */
+    ===================================== */
 
-    #youtubeContainer {
+    #youtubeScreen {
+
       position: fixed;
 
       left: 50%;
       top: 50%;
+
+      width: min(88vw, 850px);
+
+      aspect-ratio: 16 / 9;
 
       transform:
         translate(-50%, -50%)
         scale(1);
 
-      width: min(88vw, 800px);
-      aspect-ratio: 16 / 9;
-
       background: #000;
+
+      z-index: 50;
+
+      display: none;
 
       border-radius: 8px;
 
       overflow: hidden;
 
-      z-index: 15;
-
-      display: none;
+      border:
+        1px solid
+        rgba(255,255,255,.2);
 
       box-shadow:
-        0 20px 80px rgba(0,0,0,.7);
+        0 20px 80px
+        rgba(0,0,0,.75);
 
-      border: 1px solid rgba(255,255,255,.15);
     }
 
-    #youtubeContainer iframe {
+
+    #youtubeScreen iframe {
+
       width: 100%;
       height: 100%;
 
-      border: 0;
+      border: none;
+
+      display: block;
+
     }
 
-    /* =========================
-       CONTROLES AR
-    ========================= */
 
-    #arControls {
-      position: fixed;
-
-      left: 50%;
-      bottom: 20px;
-
-      transform: translateX(-50%);
-
-      z-index: 30;
-
-      display: none;
-
-      width: min(94%, 500px);
-
-      padding: 10px;
-
-      background: rgba(10,10,10,.85);
-
-      border-radius: 16px;
-
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-
-      color: white;
-    }
-
-    .controlRow {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .controlRow + .controlRow {
-      margin-top: 8px;
-    }
-
-    .controlRow button {
-      flex: 1;
-
-      background: #252525;
-      color: white;
-    }
-
-    .controlRow button.primary {
-      background: white;
-      color: black;
-    }
-
-    #sizeValue {
-      min-width: 55px;
-      text-align: center;
-      font-size: 13px;
-      color: #ccc;
-    }
-
-    /* =========================
+    /* =====================================
        RETÍCULO
-    ========================= */
+    ===================================== */
 
     #reticle {
+
       position: fixed;
 
       left: 50%;
       top: 50%;
 
-      width: 50px;
-      height: 50px;
+      width: 52px;
+      height: 52px;
 
-      transform: translate(-50%, -50%);
+      transform:
+        translate(-50%, -50%);
 
-      border: 2px solid white;
+      border:
+        2px solid white;
+
       border-radius: 50%;
 
-      z-index: 10;
+      z-index: 20;
 
       display: none;
 
       pointer-events: none;
 
+      opacity: .5;
+
       box-shadow:
-        0 0 15px rgba(255,255,255,.7);
+        0 0 18px
+        rgba(255,255,255,.7);
+
     }
 
-    #reticle::before,
-    #reticle::after {
+
+    #reticle::before {
+
       content: "";
 
       position: absolute;
 
-      background: white;
-    }
-
-    #reticle::before {
       width: 2px;
       height: 70px;
 
       left: 50%;
-      top: -12px;
+      top: 50%;
 
-      transform: translateX(-50%);
+      transform:
+        translate(-50%, -50%);
+
+      background: white;
+
     }
 
+
     #reticle::after {
+
+      content: "";
+
+      position: absolute;
+
       width: 70px;
       height: 2px;
 
+      left: 50%;
       top: 50%;
-      left: -12px;
 
-      transform: translateY(-50%);
+      transform:
+        translate(-50%, -50%);
+
+      background: white;
+
     }
 
-    /* =========================
+
+    /* =====================================
        INSTRUÇÕES
-    ========================= */
+    ===================================== */
 
     #instruction {
+
       position: fixed;
 
       left: 50%;
-      top: 15%;
+      top: 12%;
 
-      transform: translateX(-50%);
+      transform:
+        translateX(-50%);
 
-      z-index: 25;
+      width: min(90%, 420px);
 
-      display: none;
-
-      width: min(90%, 400px);
-
-      text-align: center;
-
-      color: white;
-
-      background: rgba(0,0,0,.65);
-
-      padding: 12px 16px;
+      padding:
+        12px 16px;
 
       border-radius: 12px;
 
+      background:
+        rgba(0,0,0,.65);
+
+      color: white;
+
+      text-align: center;
+
       font-size: 14px;
 
-      backdrop-filter: blur(10px);
+      z-index: 60;
+
+      display: none;
+
+      backdrop-filter:
+        blur(10px);
+
     }
 
-    /* =========================
+
+    /* =====================================
        STATUS
-    ========================= */
+    ===================================== */
 
     #status {
+
       position: fixed;
 
       top: 15px;
       left: 50%;
 
-      transform: translateX(-50%);
+      transform:
+        translateX(-50%);
 
-      z-index: 40;
-
-      display: none;
-
-      color: white;
-
-      background: rgba(0,0,0,.7);
-
-      padding: 8px 14px;
+      padding:
+        8px 14px;
 
       border-radius: 20px;
 
-      font-size: 12px;
-
-      white-space: nowrap;
-    }
-
-    /* =========================
-       BOTÃO SAIR
-    ========================= */
-
-    #exitAR {
-      position: fixed;
-
-      top: 15px;
-      right: 15px;
-
-      z-index: 40;
-
-      display: none;
-
-      background: rgba(0,0,0,.75);
+      background:
+        rgba(0,0,0,.7);
 
       color: white;
 
-      border: 1px solid rgba(255,255,255,.2);
+      font-size: 12px;
+
+      z-index: 80;
+
+      display: none;
+
+    }
+
+
+    /* =====================================
+       BOTÃO SAIR
+    ===================================== */
+
+    #exitAR {
+
+      position: fixed;
+
+      right: 15px;
+      top: 15px;
+
+      width: 46px;
+      height: 46px;
+
+      min-height: 46px;
+
+      padding: 0;
 
       border-radius: 50%;
 
-      width: 45px;
-      height: 45px;
+      background:
+        rgba(0,0,0,.75);
 
-      padding: 0;
-    }
+      border:
+        1px solid
+        rgba(255,255,255,.2);
 
-    /* =========================
-       DESKTOP
-    ========================= */
+      color: white;
 
-    @media (min-width: 700px) {
+      font-size: 18px;
 
-      #ui {
-        bottom: 30px;
-      }
+      z-index: 90;
 
-      #youtubeContainer {
-        width: 720px;
-      }
+      display: none;
 
     }
+
+
+    /* =====================================
+       CONTROLES
+    ===================================== */
+
+    #controls {
+
+      position: fixed;
+
+      left: 50%;
+      bottom: 20px;
+
+      transform:
+        translateX(-50%);
+
+      width: min(94%, 500px);
+
+      padding: 10px;
+
+      background:
+        rgba(10,10,10,.86);
+
+      border-radius: 16px;
+
+      z-index: 70;
+
+      display: none;
+
+      backdrop-filter:
+        blur(15px);
+
+      -webkit-backdrop-filter:
+        blur(15px);
+
+    }
+
+
+    .row {
+
+      display: flex;
+
+      gap: 8px;
+
+    }
+
+
+    .row + .row {
+
+      margin-top: 8px;
+
+    }
+
+
+    .row button {
+
+      flex: 1;
+
+      background: #252525;
+
+      color: white;
+
+    }
+
+
+    #size {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      min-width: 65px;
+
+      color: white;
+
+      font-size: 13px;
+
+    }
+
+
+    #hideControls {
+
+      background: white;
+
+      color: black;
+
+    }
+
+
+    @media (max-width: 500px) {
+
+      #youtubeScreen {
+
+        width: 90vw;
+
+      }
+
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
-  <!--
-    CANVAS WEBGL
-  -->
-  <canvas id="arCanvas"></canvas>
 
+  <!-- =====================================
+       MENU
+  ====================================== -->
 
-  <!--
-    RETÍCULO DE HIT TEST
-  -->
-  <div id="reticle"></div>
+  <div id="menu">
 
-
-  <!--
-    STATUS
-  -->
-  <div id="status">
-    AR ativo
-  </div>
-
-
-  <!--
-    INSTRUÇÃO
-  -->
-  <div id="instruction">
-    Aponte para uma superfície e mova lentamente o celular.
-  </div>
-
-
-  <!--
-    BOTÃO SAIR
-  -->
-  <button id="exitAR">
-    ✕
-  </button>
-
-
-  <!--
-    MENU PRINCIPAL
-  -->
-  <div id="ui">
-
-    <h1>🥽 AR YouTube Cinema</h1>
+    <h1>
+      🥽 AR YouTube Cinema
+    </h1>
 
     <p>
-      Coloque um vídeo do YouTube em uma tela de realidade aumentada.
+      Cole um vídeo do YouTube e depois
+      inicie a experiência de realidade aumentada.
     </p>
+
 
     <input
       id="youtubeUrl"
       type="text"
-      placeholder="Cole o link do YouTube"
+      placeholder="https://www.youtube.com/watch?v=..."
       autocomplete="off"
     >
 
-    <button id="loadYoutube">
+
+    <button id="loadVideo">
       Carregar vídeo
     </button>
+
 
     <button id="startAR">
       INICIAR AR
@@ -463,39 +614,81 @@
   </div>
 
 
-  <!--
-    PLAYER YOUTUBE
-  -->
-  <div id="youtubeContainer">
+  <!-- =====================================
+       RETÍCULO
+  ====================================== -->
+
+  <div id="reticle"></div>
+
+
+  <!-- =====================================
+       INSTRUÇÕES
+  ====================================== -->
+
+  <div id="instruction">
+
+    Aponte a câmera para uma superfície
+    e mova lentamente o celular.
+
+  </div>
+
+
+  <!-- =====================================
+       STATUS
+  ====================================== -->
+
+  <div id="status">
+    AR ativo
+  </div>
+
+
+  <!-- =====================================
+       SAIR
+  ====================================== -->
+
+  <button id="exitAR">
+    ✕
+  </button>
+
+
+  <!-- =====================================
+       PLAYER YOUTUBE
+  ====================================== -->
+
+  <div id="youtubeScreen">
 
     <iframe
       id="youtubeFrame"
+
       allow="
         autoplay;
         encrypted-media;
         picture-in-picture;
         fullscreen
       "
+
       allowfullscreen>
+
     </iframe>
 
   </div>
 
 
-  <!--
-    CONTROLES AR
-  -->
-  <div id="arControls">
+  <!-- =====================================
+       CONTROLES
+  ====================================== -->
 
-    <div class="controlRow">
+  <div id="controls">
+
+    <div class="row">
 
       <button id="smaller">
         −
       </button>
 
-      <span id="sizeValue">
+      <div id="size">
         100%
-      </span>
+      </div>
 
       <button id="larger">
         +
@@ -503,15 +696,14 @@
 
     </div>
 
-    <div class="controlRow">
+
+    <div class="row">
 
       <button id="reposition">
         Reposicionar
       </button>
 
-      <button
-        id="hideControls"
-        class="primary">
+      <button id="hideControls">
         Ocultar
       </button>
 
@@ -520,125 +712,177 @@
   </div>
 
 
+  <!-- =====================================
+       JAVASCRIPT
+  ====================================== -->
+
   <script type="module">
 
-    /*
-    ============================================================
-      IMPORTS
-    ============================================================
-    */
+
+    /* =====================================
+       IMPORTS ORIGINAIS
+    ====================================== */
 
     import {
       WebXRButton
     } from './js/util/webxr-button.js';
 
+
     import {
       Scene
     } from './js/render/scenes/scene.js';
+
 
     import {
       Renderer,
       createWebGLContext
     } from './js/render/core/renderer.js';
 
+
     import {
       SkyboxNode
     } from './js/render/nodes/skybox.js';
+
 
     import {
       InlineViewerHelper
     } from './js/util/inline-viewer-helper.js';
 
+
     import {
       QueryArgs
     } from './js/util/query-args.js';
+
 
     import WebXRPolyfill
       from './js/third-party/webxr-polyfill/build/webxr-polyfill.module.js';
 
 
-    /*
-    ============================================================
-      POLYFILL
-    ============================================================
-    */
+    /* =====================================
+       POLYFILL
+    ====================================== */
 
-    if (QueryArgs.getBool('usePolyfill', true)) {
+    if (
+      QueryArgs.getBool(
+        'usePolyfill',
+        true
+      )
+    ) {
 
       new WebXRPolyfill();
 
     }
 
 
-    /*
-    ============================================================
-      ELEMENTOS
-    ============================================================
-    */
+    /* =====================================
+       ELEMENTOS
+    ====================================== */
 
-    const canvas =
-      document.getElementById('arCanvas');
+    const menu =
+      document.getElementById(
+        'menu'
+      );
 
-    const ui =
-      document.getElementById('ui');
-
-    const startAR =
-      document.getElementById('startAR');
-
-    const loadYoutube =
-      document.getElementById('loadYoutube');
 
     const youtubeUrl =
-      document.getElementById('youtubeUrl');
+      document.getElementById(
+        'youtubeUrl'
+      );
 
-    const youtubeContainer =
-      document.getElementById('youtubeContainer');
+
+    const loadVideo =
+      document.getElementById(
+        'loadVideo'
+      );
+
+
+    const startAR =
+      document.getElementById(
+        'startAR'
+      );
+
+
+    const youtubeScreen =
+      document.getElementById(
+        'youtubeScreen'
+      );
+
 
     const youtubeFrame =
-      document.getElementById('youtubeFrame');
+      document.getElementById(
+        'youtubeFrame'
+      );
+
 
     const reticle =
-      document.getElementById('reticle');
+      document.getElementById(
+        'reticle'
+      );
+
 
     const instruction =
-      document.getElementById('instruction');
+      document.getElementById(
+        'instruction'
+      );
+
 
     const status =
-      document.getElementById('status');
+      document.getElementById(
+        'status'
+      );
+
 
     const exitAR =
-      document.getElementById('exitAR');
+      document.getElementById(
+        'exitAR'
+      );
 
-    const arControls =
-      document.getElementById('arControls');
+
+    const controls =
+      document.getElementById(
+        'controls'
+      );
+
 
     const smaller =
-      document.getElementById('smaller');
+      document.getElementById(
+        'smaller'
+      );
+
 
     const larger =
-      document.getElementById('larger');
+      document.getElementById(
+        'larger'
+      );
 
-    const sizeValue =
-      document.getElementById('sizeValue');
+
+    const size =
+      document.getElementById(
+        'size'
+      );
+
 
     const reposition =
-      document.getElementById('reposition');
+      document.getElementById(
+        'reposition'
+      );
+
 
     const hideControls =
-      document.getElementById('hideControls');
+      document.getElementById(
+        'hideControls'
+      );
 
 
-    /*
-    ============================================================
-      XR
-    ============================================================
-    */
+    /* =====================================
+       XR GLOBALS
+    ====================================== */
 
     let xrButton = null;
 
     let xrSession = null;
 
-    let xrReferenceSpace = null;
+    let xrImmersiveRefSpace = null;
 
     let viewerSpace = null;
 
@@ -647,11 +891,9 @@
     let hitTestSourceRequested = false;
 
 
-    /*
-    ============================================================
-      WEBGL
-    ============================================================
-    */
+    /* =====================================
+       WEBGL GLOBALS
+    ====================================== */
 
     let gl = null;
 
@@ -660,75 +902,89 @@
     let scene = new Scene();
 
 
-    /*
-    ============================================================
-      SKYBOX
-    ============================================================
-    */
+    /* =====================================
+       SKYBOX
+    ====================================== */
 
-    const skybox =
+    let skybox =
       new SkyboxNode({
-        url: 'media/textures/milky-way-4k.png'
+        url:
+          'media/textures/milky-way-4k.png'
       });
 
-    scene.addNode(skybox);
+
+    scene.addNode(
+      skybox
+    );
 
 
-    /*
-    ============================================================
-      ESTADO DO PLAYER
-    ============================================================
-    */
+    /* =====================================
+       PLAYER
+    ====================================== */
 
     let youtubeVideoId = null;
 
-    let screenPlaced = false;
-
     let screenScale = 1;
 
+    let screenPlaced = false;
 
-    /*
-    ============================================================
-      EXTRAI ID DO YOUTUBE
-    ============================================================
-    */
 
-    function getYouTubeVideoId(url) {
+    /* =====================================
+       EXTRAI ID YOUTUBE
+    ====================================== */
+
+    function getYouTubeId(
+      url
+    ) {
 
       if (!url) {
+
         return null;
+
       }
 
-      url = url.trim();
 
-      /*
-        youtube.com/watch?v=XXXX
-      */
+      url =
+        url.trim();
+
 
       try {
 
         const parsed =
           new URL(url);
 
+
+        /*
+          youtube.com/watch?v=
+        */
+
         if (
-          parsed.hostname.includes('youtube.com')
+          parsed.hostname.includes(
+            'youtube.com'
+          )
         ) {
 
-          const id =
-            parsed.searchParams.get('v');
+          const video =
+            parsed.searchParams.get(
+              'v'
+            );
 
-          if (id) {
-            return id;
+          if (video) {
+
+            return video;
+
           }
 
         }
 
+
         /*
-          youtu.be/XXXX
+          youtu.be/
         */
 
         if (
-          parsed.hostname === 'youtu.be'
+          parsed.hostname ===
+          'youtu.be'
         ) {
 
           return parsed.pathname
@@ -737,12 +993,14 @@
 
         }
 
+
         /*
-          youtube.com/shorts/XXXX
+          shorts
         */
 
         if (
-          parsed.pathname.startsWith('/shorts/')
+          parsed.pathname
+            .startsWith('/shorts/')
         ) {
 
           return parsed.pathname
@@ -751,12 +1009,14 @@
 
         }
 
+
         /*
-          youtube.com/embed/XXXX
+          embed
         */
 
         if (
-          parsed.pathname.startsWith('/embed/')
+          parsed.pathname
+            .startsWith('/embed/')
         ) {
 
           return parsed.pathname
@@ -767,105 +1027,141 @@
 
       } catch (error) {
 
-        console.warn(
-          'URL inválida:',
+        console.error(
           error
         );
 
       }
+
 
       return null;
 
     }
 
 
-    /*
-    ============================================================
-      CARREGAR YOUTUBE
-    ============================================================
-    */
+    /* =====================================
+       CARREGAR VÍDEO
+    ====================================== */
 
-    function loadYouTube() {
+    loadVideo.addEventListener(
+      'click',
+      () => {
 
-      const id =
-        getYouTubeVideoId(
-          youtubeUrl.value
-        );
+        const id =
+          getYouTubeId(
+            youtubeUrl.value
+          );
 
-      if (!id) {
 
-        alert(
-          'Cole um link válido do YouTube.'
-        );
+        if (!id) {
 
-        return;
+          alert(
+            'Cole uma URL válida do YouTube.'
+          );
+
+          return;
+
+        }
+
+
+        youtubeVideoId =
+          id;
+
+
+        youtubeFrame.src =
+          'https://www.youtube.com/embed/' +
+          encodeURIComponent(id) +
+          '?autoplay=1' +
+          '&playsinline=1' +
+          '&rel=0';
+
+
+        youtubeScreen.style.display =
+          'block';
+
+
+        status.textContent =
+          'Vídeo carregado';
+
+
+        status.style.display =
+          'block';
 
       }
-
-      youtubeVideoId = id;
-
-      youtubeFrame.src =
-        'https://www.youtube.com/embed/' +
-        encodeURIComponent(id) +
-        '?autoplay=1' +
-        '&playsinline=1' +
-        '&rel=0';
-
-      youtubeContainer.style.display =
-        'block';
-
-      status.textContent =
-        'Vídeo carregado';
-
-      status.style.display =
-        'block';
-
-    }
-
-
-    /*
-    ============================================================
-      EVENTO CARREGAR
-    ============================================================
-    */
-
-    loadYoutube.addEventListener(
-      'click',
-      loadYouTube
     );
 
 
-    /*
-    ============================================================
-      WEBGL
-    ============================================================
-    */
+    /* =====================================
+       WEBGL
+       IMPORTANTE:
+       MANTIDO COMO NO CÓDIGO ORIGINAL
+    ====================================== */
 
     function initGL() {
 
       if (gl) {
+
         return;
+
       }
+
 
       gl =
         createWebGLContext({
-          canvas: canvas,
-          xrCompatible: true
+
+          xrCompatible:
+            true
+
         });
+
+
+      /*
+        Exatamente como no código
+        original que funcionou.
+      */
+
+      document.body.appendChild(
+        gl.canvas
+      );
+
+
+      function onResize() {
+
+        gl.canvas.width =
+          gl.canvas.clientWidth *
+          window.devicePixelRatio;
+
+
+        gl.canvas.height =
+          gl.canvas.clientHeight *
+          window.devicePixelRatio;
+
+      }
+
+
+      window.addEventListener(
+        'resize',
+        onResize
+      );
+
+
+      onResize();
+
 
       renderer =
         new Renderer(gl);
 
-      scene.setRenderer(renderer);
+
+      scene.setRenderer(
+        renderer
+      );
 
     }
 
 
-    /*
-    ============================================================
-      INICIAR XR
-    ============================================================
-    */
+    /* =====================================
+       INICIALIZAR WEBXR
+    ====================================== */
 
     function initXR() {
 
@@ -891,19 +1187,22 @@
 
 
       /*
-        Mantemos o botão original do WebXR.
+        Mantemos o botão oficial
+        escondido visualmente.
       */
+
+      xrButton.domElement.style.display =
+        'none';
+
 
       document.body.appendChild(
         xrButton.domElement
       );
 
 
-      /*
-        Verifica suporte.
-      */
-
-      if (navigator.xr) {
+      if (
+        navigator.xr
+      ) {
 
         navigator.xr
           .isSessionSupported(
@@ -915,13 +1214,15 @@
               xrButton.enabled =
                 supported;
 
+
               startAR.disabled =
                 !supported;
+
 
               if (!supported) {
 
                 startAR.textContent =
-                  'AR NÃO SUPORTADO';
+                  'AR NÃO DISPONÍVEL';
 
               }
 
@@ -941,36 +1242,60 @@
     }
 
 
-    /*
-    ============================================================
-      PEDIR SESSÃO AR
-    ============================================================
-    */
+    /* =====================================
+       PEDIR AR
+    ====================================== */
 
     function onRequestSession() {
 
       const sessionInit = {
 
         requiredFeatures: [
+
           'local'
+
         ],
 
         optionalFeatures: [
-          'hit-test',
-          'dom-overlay'
+
+          'hit-test'
+
         ]
 
       };
 
 
       /*
-        DOM Overlay permite colocar
-        o iframe do YouTube sobre a
-        experiência AR.
+        Tenta adicionar DOM Overlay.
+
+        Nem todo navegador aceita,
+        por isso fazemos de maneira
+        segura.
+      */
+
+      if (
+        'domOverlay' in
+        navigator.xr
+      ) {
+
+        sessionInit.optionalFeatures
+          .push(
+            'dom-overlay'
+          );
+
+      }
+
+
+      /*
+        Se o navegador suportar
+        DOM Overlay, usamos a página
+        como camada de interface.
       */
 
       sessionInit.domOverlay = {
+
         root: document.body
+
       };
 
 
@@ -985,12 +1310,15 @@
             xrSession =
               session;
 
+
             xrButton.setSession(
               session
             );
 
+
             session.isImmersive =
               true;
+
 
             onSessionStarted(
               session
@@ -1002,11 +1330,9 @@
     }
 
 
-    /*
-    ============================================================
-      WEBXR SESSION
-    ============================================================
-    */
+    /* =====================================
+       SESSION START
+    ====================================== */
 
     function onSessionStarted(
       session
@@ -1019,15 +1345,23 @@
 
 
       /*
-        AR deve mostrar o mundo real.
+        Esconde céu.
       */
 
       skybox.visible =
         false;
 
 
+      /*
+        Inicializa WebGL.
+      */
+
       initGL();
 
+
+      /*
+        Configura camada XR.
+      */
 
       session.updateRenderState({
 
@@ -1041,7 +1375,7 @@
 
 
       /*
-        Espaço local.
+        Reference space.
       */
 
       session
@@ -1051,35 +1385,12 @@
         .then(
           refSpace => {
 
-            xrReferenceSpace =
+            xrImmersiveRefSpace =
               refSpace;
 
 
             /*
-              Listener para reset.
-            */
-
-            xrReferenceSpace
-              .addEventListener(
-                'reset',
-                event => {
-
-                  if (event.transform) {
-
-                    xrReferenceSpace =
-                      xrReferenceSpace
-                        .getOffsetReferenceSpace(
-                          event.transform
-                        );
-
-                  }
-
-                }
-              );
-
-
-            /*
-              Solicita viewer space
+              Viewer space
               para hit-test.
             */
 
@@ -1091,10 +1402,11 @@
           }
         )
         .then(
-          space => {
+          viewer => {
 
             viewerSpace =
-              space;
+              viewer;
+
 
             session.requestAnimationFrame(
               onXRFrame
@@ -1105,39 +1417,42 @@
 
 
       /*
-        Interface AR.
+        Interface.
       */
 
-      ui.style.display =
+      menu.style.display =
         'none';
+
 
       status.style.display =
         'block';
 
+
       status.textContent =
         'AR ativo';
+
 
       instruction.style.display =
         'block';
 
+
       reticle.style.display =
         'block';
+
 
       exitAR.style.display =
         'block';
 
 
-      /*
-        Player somente aparece
-        se um vídeo já foi carregado.
-      */
+      if (
+        youtubeVideoId
+      ) {
 
-      if (youtubeVideoId) {
-
-        youtubeContainer.style.display =
+        youtubeScreen.style.display =
           'block';
 
-        arControls.style.display =
+
+        controls.style.display =
           'block';
 
       }
@@ -1145,11 +1460,9 @@
     }
 
 
-    /*
-    ============================================================
-      HIT TEST
-    ============================================================
-    */
+    /* =====================================
+       HIT TEST SOURCE
+    ====================================== */
 
     function requestHitTestSource(
       session
@@ -1158,8 +1471,11 @@
       if (
         hitTestSourceRequested
       ) {
+
         return;
+
       }
+
 
       hitTestSourceRequested =
         true;
@@ -1170,7 +1486,7 @@
       ) {
 
         console.warn(
-          'Hit Test não disponível.'
+          'Hit Test não suportado.'
         );
 
         return;
@@ -1180,7 +1496,10 @@
 
       session
         .requestHitTestSource({
-          space: viewerSpace
+
+          space:
+            viewerSpace
+
         })
         .then(
           source => {
@@ -1196,11 +1515,11 @@
         'end',
         () => {
 
-          hitTestSourceRequested =
-            false;
-
           hitTestSource =
             null;
+
+          hitTestSourceRequested =
+            false;
 
         },
         {
@@ -1211,11 +1530,9 @@
     }
 
 
-    /*
-    ============================================================
-      FRAME AR
-    ============================================================
-    */
+    /* =====================================
+       FRAME
+    ====================================== */
 
     function onXRFrame(
       time,
@@ -1232,7 +1549,7 @@
 
 
       /*
-        Solicita hit-test.
+        Hit test.
       */
 
       requestHitTestSource(
@@ -1241,61 +1558,57 @@
 
 
       /*
-        Pose da câmera.
+        Pose.
       */
 
       const pose =
         frame.getViewerPose(
-          xrReferenceSpace
+          xrImmersiveRefSpace
         );
 
 
       if (!pose) {
+
         return;
+
       }
 
 
       /*
-        Resultado do hit-test.
+        Resultado hit test.
       */
 
       if (
         hitTestSource
       ) {
 
-        const hitTestResults =
+        const results =
           frame.getHitTestResults(
             hitTestSource
           );
 
 
         if (
-          hitTestResults.length > 0
+          results.length > 0
         ) {
 
           const hit =
-            hitTestResults[0];
+            results[0];
 
 
           const hitPose =
             hit.getPose(
-              xrReferenceSpace
+              xrImmersiveRefSpace
             );
 
 
           if (hitPose) {
 
-            /*
-              Encontramos uma superfície.
-
-              O retículo visual continua
-              no centro da tela indicando
-              que existe uma superfície
-              válida.
-            */
-
             reticle.style.opacity =
               '1';
+
+            status.textContent =
+              'Superfície detectada';
 
           }
 
@@ -1304,102 +1617,109 @@
           reticle.style.opacity =
             '.35';
 
+          status.textContent =
+            'Procurando superfície...';
+
         }
 
       }
 
 
       /*
-        Renderização da cena.
+        Renderiza WebGL.
       */
 
       scene.startFrame();
+
 
       scene.drawXRFrame(
         frame,
         pose
       );
 
+
       scene.endFrame();
 
     }
 
 
-    /*
-    ============================================================
-      TOQUE NA TELA
-    ============================================================
-    */
+    /* =====================================
+       TOQUE PARA POSICIONAR
+    ====================================== */
 
-    canvas.addEventListener(
-      'click',
-      () => {
+    document.addEventListener(
+      'touchend',
+      event => {
 
         if (!xrSession) {
-          return;
-        }
 
-        if (!hitTestSource) {
           return;
+
         }
 
 
         /*
-          Marca que o usuário encontrou
-          uma superfície.
-
-          O iframe do YouTube continua
-          sendo DOM overlay.
+          Não interfere nos controles.
         */
 
-        screenPlaced =
-          true;
+        if (
+          event.target.closest(
+            '#controls'
+          ) ||
+          event.target.closest(
+            '#youtubeScreen'
+          )
+        ) {
+
+          return;
+
+        }
 
 
-        instruction.style.display =
-          'none';
+        if (
+          hitTestSource
+        ) {
+
+          screenPlaced =
+            true;
 
 
-        status.textContent =
-          'Tela posicionada';
+          instruction.style.display =
+            'none';
 
 
-        /*
-          Aqui futuramente podemos
-          converter a posição 3D do
-          hit-test para uma tela
-          verdadeiramente espacial.
-        */
+          status.textContent =
+            'Tela posicionada';
+
+        }
 
       }
     );
 
 
-    /*
-    ============================================================
-      TAMANHO DA TELA
-    ============================================================
-    */
+    /* =====================================
+       ESCALA
+    ====================================== */
 
-    function updateScreenScale() {
+    function updateScale() {
 
       screenScale =
         Math.max(
           .5,
           Math.min(
-            2,
+            2.5,
             screenScale
           )
         );
 
 
-      youtubeContainer.style.transform =
+      youtubeScreen.style.transform =
         'translate(-50%, -50%) scale(' +
         screenScale +
         ')';
 
 
-      sizeValue.textContent =
+      size.textContent =
         Math.round(
           screenScale * 100
         ) + '%';
@@ -1407,9 +1727,9 @@
     }
 
 
-    /*
-      Diminuir
-    */
+    /* =====================================
+       MENOR
+    ====================================== */
 
     smaller.addEventListener(
       'click',
@@ -1417,15 +1737,15 @@
 
         screenScale -= .1;
 
-        updateScreenScale();
+        updateScale();
 
       }
     );
 
 
-    /*
-      Aumentar
-    */
+    /* =====================================
+       MAIOR
+    ====================================== */
 
     larger.addEventListener(
       'click',
@@ -1433,17 +1753,15 @@
 
         screenScale += .1;
 
-        updateScreenScale();
+        updateScale();
 
       }
     );
 
 
-    /*
-    ============================================================
-      REPOSICIONAR
-    ============================================================
-    */
+    /* =====================================
+       REPOSICIONAR
+    ====================================== */
 
     reposition.addEventListener(
       'click',
@@ -1452,46 +1770,63 @@
         screenPlaced =
           false;
 
+
         instruction.style.display =
           'block';
 
+
         status.textContent =
-          'Aponte para uma superfície';
+          'Aponte para outra superfície';
 
       }
     );
 
 
-    /*
-    ============================================================
-      OCULTAR CONTROLES
-    ============================================================
-    */
+    /* =====================================
+       OCULTAR CONTROLES
+    ====================================== */
 
     hideControls.addEventListener(
       'click',
       () => {
 
-        arControls.style.display =
+        controls.style.display =
           'none';
 
       }
     );
 
 
-    /*
-    ============================================================
-      SAIR DO AR
-    ============================================================
-    */
+    /* =====================================
+       SAIR
+    ====================================== */
+
+    exitAR.addEventListener(
+      'click',
+      () => {
+
+        if (
+          xrSession
+        ) {
+
+          xrSession.end();
+
+        }
+
+      }
+    );
+
+
+    /* =====================================
+       SESSION END
+    ====================================== */
 
     function onEndSession(
       session
     ) {
 
       if (
-        session &&
-        session.end
+        session
       ) {
 
         session.end();
@@ -1508,11 +1843,14 @@
       xrSession =
         null;
 
+
       hitTestSource =
         null;
 
+
       hitTestSourceRequested =
         false;
+
 
       screenPlaced =
         false;
@@ -1522,26 +1860,38 @@
         true;
 
 
-      ui.style.display =
+      menu.style.display =
         'block';
+
 
       instruction.style.display =
         'none';
 
+
       reticle.style.display =
         'none';
+
 
       status.style.display =
         'none';
 
+
       exitAR.style.display =
         'none';
 
-      arControls.style.display =
+
+      controls.style.display =
         'none';
 
 
-      if (xrButton) {
+      /*
+        O vídeo continua carregado,
+        então pode ser reaberto.
+      */
+
+      if (
+        xrButton
+      ) {
 
         xrButton.setSession(
           null
@@ -1552,40 +1902,20 @@
     }
 
 
-    /*
-    ============================================================
-      BOTÃO SAIR
-    ============================================================
-    */
-
-    exitAR.addEventListener(
-      'click',
-      () => {
-
-        if (xrSession) {
-
-          xrSession.end();
-
-        }
-
-      }
-    );
-
-
-    /*
-    ============================================================
-      BOTÃO INICIAR AR
-    ============================================================
-    */
+    /* =====================================
+       BOTÃO START AR
+    ====================================== */
 
     startAR.addEventListener(
       'click',
       () => {
 
-        if (!navigator.xr) {
+        if (
+          !navigator.xr
+        ) {
 
           alert(
-            'Este navegador não possui suporte ao WebXR.'
+            'Seu navegador não possui WebXR.'
           );
 
           return;
@@ -1599,15 +1929,14 @@
     );
 
 
-    /*
-    ============================================================
-      INICIALIZA
-    ============================================================
-    */
+    /* =====================================
+       INICIALIZA
+    ====================================== */
 
     initXR();
 
   </script>
 
 </body>
+
 </html>
