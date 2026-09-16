@@ -1,225 +1,520 @@
 ```html
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta
+    name="viewport"
+    content="width=device-width,
+    initial-scale=1.0,
+    maximum-scale=1.0,
+    user-scalable=no"
+>
 
 <title>AR Glasses</title>
 
 <style>
+
 * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
+html,
 body {
     margin: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+
     background: #000;
+
     font-family: Arial, sans-serif;
+
     color: white;
 }
 
-/* Câmera */
+
+/* =====================================
+   CÂMERA
+===================================== */
+
 #camera {
+
     position: fixed;
+
     inset: 0;
+
     width: 100%;
     height: 100%;
+
     object-fit: cover;
+
+    background: #000;
+
     z-index: 1;
 }
 
-/* Tela virtual */
-#virtualScreen {
-    position: absolute;
-    width: 320px;
-    height: 220px;
 
-    left: 50%;
-    top: 50%;
+/* =====================================
+   MIRA
+===================================== */
 
-    transform: translate(-50%, -50%);
-
-    background: rgba(10, 10, 15, 0.88);
-    border: 2px solid #00ffff;
-    border-radius: 12px;
-
-    box-shadow:
-        0 0 20px rgba(0,255,255,.6),
-        inset 0 0 20px rgba(0,255,255,.1);
-
-    z-index: 5;
-
-    overflow: hidden;
-
-    resize: both;
-}
-
-/* Barra da tela */
-#screenHeader {
-    height: 35px;
-    background: rgba(0,0,0,.8);
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0 10px;
-
-    cursor: move;
-
-    border-bottom: 1px solid #00ffff;
-}
-
-#screenHeader span {
-    font-size: 13px;
-    color: #00ffff;
-}
-
-#close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-/* Conteúdo */
-#content {
-    width: 100%;
-    height: calc(100% - 35px);
-    border: 0;
-}
-
-/* Menu */
-#menu {
-    position: fixed;
-
-    left: 50%;
-    bottom: 20px;
-
-    transform: translateX(-50%);
-
-    z-index: 10;
-
-    display: flex;
-    gap: 8px;
-
-    background: rgba(0,0,0,.75);
-
-    padding: 10px;
-
-    border-radius: 15px;
-
-    backdrop-filter: blur(10px);
-}
-
-button {
-    border: 1px solid #00ffff;
-
-    background: #111;
-
-    color: white;
-
-    padding: 10px 14px;
-
-    border-radius: 8px;
-
-    cursor: pointer;
-}
-
-button:hover {
-    background: #00ffff;
-    color: #000;
-}
-
-#urlInput {
-    width: 180px;
-
-    background: #111;
-    color: white;
-
-    border: 1px solid #555;
-
-    border-radius: 8px;
-
-    padding: 10px;
-}
-
-/* Modo central */
 #crosshair {
+
     position: fixed;
 
     left: 50%;
     top: 50%;
 
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
 
     transform: translate(-50%, -50%);
 
-    border: 1px solid rgba(0,255,255,.7);
+    border: 1px solid rgba(0,255,255,.8);
 
     border-radius: 50%;
 
-    z-index: 3;
+    z-index: 2;
 
     pointer-events: none;
 }
+
+
+/* =====================================
+   TELA VIRTUAL
+===================================== */
+
+#virtualScreen {
+
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+
+    width: 320px;
+    height: 220px;
+
+    transform: translate(-50%, -50%);
+
+    background: rgba(10,10,15,.94);
+
+    border: 2px solid #00ffff;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    z-index: 5;
+
+    box-shadow:
+        0 0 20px rgba(0,255,255,.5),
+        0 0 50px rgba(0,255,255,.15);
+
+    resize: both;
+
+    min-width: 220px;
+    min-height: 150px;
+}
+
+
+/* =====================================
+   CABEÇALHO
+===================================== */
+
+#screenHeader {
+
+    height: 36px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 8px;
+
+    background: rgba(0,0,0,.9);
+
+    border-bottom: 1px solid #00ffff;
+
+    cursor: grab;
+
+    touch-action: none;
+}
+
+#screenHeader:active {
+    cursor: grabbing;
+}
+
+
+#screenTitle {
+
+    color: #00ffff;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+}
+
+
+#close {
+
+    width: 30px;
+    height: 30px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: white;
+
+    font-size: 22px;
+
+    cursor: pointer;
+}
+
+
+/* =====================================
+   CONTEÚDO
+===================================== */
+
+#content {
+
+    width: 100%;
+    height: calc(100% - 36px);
+
+    border: 0;
+
+    background: white;
+}
+
+
+/* Vídeo da tela capturada */
+
+#screenCapture {
+
+    width: 100%;
+    height: calc(100% - 36px);
+
+    object-fit: contain;
+
+    background: #000;
+
+    display: none;
+}
+
+
+/* =====================================
+   MENU
+===================================== */
+
+#menu {
+
+    position: fixed;
+
+    left: 50%;
+    bottom: 18px;
+
+    transform: translateX(-50%);
+
+    z-index: 20;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 9px;
+
+    max-width: calc(100% - 20px);
+
+    background: rgba(0,0,0,.78);
+
+    border: 1px solid rgba(255,255,255,.15);
+
+    border-radius: 14px;
+
+    backdrop-filter: blur(12px);
+
+    -webkit-backdrop-filter: blur(12px);
+}
+
+
+/* =====================================
+   INPUT
+===================================== */
+
+#urlInput {
+
+    width: 150px;
+
+    height: 38px;
+
+    padding: 0 10px;
+
+    border: 1px solid #444;
+
+    border-radius: 8px;
+
+    outline: none;
+
+    background: #111;
+
+    color: white;
+
+    font-size: 12px;
+}
+
+
+/* =====================================
+   BOTÕES
+===================================== */
+
+button {
+
+    height: 38px;
+
+    padding: 0 12px;
+
+    border: 1px solid #00ffff;
+
+    border-radius: 8px;
+
+    background: #111;
+
+    color: white;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    touch-action: manipulation;
+}
+
+
+button:active {
+
+    transform: scale(.96);
+
+}
+
+
+button:hover {
+
+    background: #00ffff;
+
+    color: #000;
+}
+
+
+/* =====================================
+   STATUS
+===================================== */
+
+#status {
+
+    position: fixed;
+
+    top: 15px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 30;
+
+    padding: 8px 12px;
+
+    border-radius: 8px;
+
+    background: rgba(0,0,0,.7);
+
+    font-size: 11px;
+
+    opacity: 0;
+
+    transition: opacity .3s;
+
+    pointer-events: none;
+}
+
+
+#status.show {
+
+    opacity: 1;
+}
+
+
+/* =====================================
+   CELULAR
+===================================== */
+
+@media (max-width: 600px) {
+
+    #menu {
+
+        flex-wrap: wrap;
+
+        justify-content: center;
+
+    }
+
+    #urlInput {
+
+        width: 140px;
+
+    }
+
+    #virtualScreen {
+
+        width: 290px;
+        height: 200px;
+
+    }
+
+}
+
 </style>
+
 </head>
+
 
 <body>
 
-<!-- Câmera -->
-<video id="camera" autoplay playsinline></video>
 
-<!-- Mira -->
+<!-- =====================================
+     CÂMERA
+===================================== -->
+
+<video
+    id="camera"
+    autoplay
+    playsinline
+    muted
+></video>
+
+
+<!-- =====================================
+     MIRA
+===================================== -->
+
 <div id="crosshair"></div>
 
-<!-- Tela virtual -->
+
+<!-- =====================================
+     STATUS
+===================================== -->
+
+<div id="status"></div>
+
+
+<!-- =====================================
+     TELA VIRTUAL
+===================================== -->
+
 <div id="virtualScreen">
 
-    <div id="screenHeader">
-        <span>AR SCREEN</span>
 
-        <button id="close">×</button>
+    <div id="screenHeader">
+
+        <span id="screenTitle">
+            AR SCREEN
+        </span>
+
+        <button
+            type="button"
+            id="close"
+        >
+            ×
+        </button>
+
     </div>
+
+
+    <!-- Conteúdo de sites -->
 
     <iframe
         id="content"
-        src="https://example.com">
-    </iframe>
+        src="about:blank"
+        allow="fullscreen"
+    ></iframe>
+
+
+    <!-- Conteúdo da captura -->
+
+    <video
+        id="screenCapture"
+        autoplay
+        playsinline
+        muted
+    ></video>
+
 
 </div>
 
-<!-- Controles -->
+
+<!-- =====================================
+     MENU
+===================================== -->
+
 <div id="menu">
 
-    <button onclick="startCamera()">
+
+    <button
+        type="button"
+        id="cameraButton"
+    >
         📷 AR
     </button>
 
+
     <input
         id="urlInput"
-        placeholder="https://site.com">
+        type="url"
+        placeholder="https://site.com"
+        autocomplete="off"
+    >
 
-    <button onclick="openURL()">
+
+    <button
+        type="button"
+        id="openButton"
+    >
         Abrir
     </button>
 
-    <button onclick="captureScreen()">
+
+    <button
+        type="button"
+        id="captureButton"
+    >
         📱 Tela
     </button>
+
 
 </div>
 
 
 <script>
 
-const camera = document.getElementById("camera");
+
+/* =====================================
+   ELEMENTOS
+===================================== */
+
+const camera =
+    document.getElementById("camera");
 
 const virtualScreen =
     document.getElementById("virtualScreen");
@@ -227,104 +522,265 @@ const virtualScreen =
 const content =
     document.getElementById("content");
 
-const close =
+const screenCapture =
+    document.getElementById("screenCapture");
+
+const closeButton =
     document.getElementById("close");
 
+const cameraButton =
+    document.getElementById("cameraButton");
 
-// =============================
-// CÂMERA
-// =============================
+const openButton =
+    document.getElementById("openButton");
+
+const captureButton =
+    document.getElementById("captureButton");
+
+const urlInput =
+    document.getElementById("urlInput");
+
+const status =
+    document.getElementById("status");
+
+
+/* =====================================
+   STATUS
+===================================== */
+
+let statusTimer;
+
+
+function showStatus(message) {
+
+    status.textContent = message;
+
+    status.classList.add("show");
+
+    clearTimeout(statusTimer);
+
+    statusTimer = setTimeout(() => {
+
+        status.classList.remove("show");
+
+    }, 2500);
+}
+
+
+/* =====================================
+   CÂMERA
+===================================== */
 
 async function startCamera() {
 
     try {
 
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+
+            showStatus(
+                "Seu navegador não suporta câmera."
+            );
+
+            return;
+        }
+
+
         const stream =
             await navigator.mediaDevices.getUserMedia({
 
                 video: {
+
                     facingMode: {
                         ideal: "environment"
                     }
+
                 },
 
                 audio: false
 
             });
 
+
         camera.srcObject = stream;
 
-    } catch (error) {
+        showStatus("Câmera AR ativada.");
 
-        alert(
-            "Não foi possível acessar a câmera."
-        );
+    }
+
+    catch (error) {
 
         console.error(error);
+
+        showStatus(
+            "Permissão da câmera recusada."
+        );
+
     }
+
 }
 
 
-// =============================
-// ABRIR SITE
-// =============================
+/* =====================================
+   ABRIR SITE
+===================================== */
 
 function openURL() {
 
     let url =
-        document.getElementById("urlInput").value;
+        urlInput.value.trim();
 
-    if (!url)
+
+    if (!url) {
+
+        showStatus(
+            "Digite uma URL."
+        );
+
         return;
+    }
 
-    if (!url.startsWith("http"))
-        url = "https://" + url;
+
+    if (
+        !url.startsWith("http://") &&
+        !url.startsWith("https://")
+    ) {
+
+        url =
+            "https://" + url;
+
+    }
+
+
+    /*
+       Mostra o iframe
+       e esconde a captura
+    */
+
+    content.style.display =
+        "block";
+
+    screenCapture.style.display =
+        "none";
+
 
     content.src = url;
+
+
+    virtualScreen.style.display =
+        "block";
+
+
+    showStatus(
+        "Página carregada na tela AR."
+    );
+
 }
 
 
-// =============================
-// FECHAR TELA
-// =============================
-
-close.onclick = function() {
-
-    virtualScreen.style.display = "none";
-
-};
-
-
-// =============================
-// CAPTURAR TELA
-// =============================
+/* =====================================
+   CAPTURA DE TELA
+===================================== */
 
 async function captureScreen() {
 
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getDisplayMedia) {
+
+        showStatus(
+            "Seu navegador não permite captura de tela."
+        );
+
+        return;
+    }
+
+
     try {
 
-        const stream =
-            await navigator.mediaDevices.getDisplayMedia({
-
-                video: true,
-
-                audio: false
-
-            });
-
-        content.srcObject = stream;
-
         /*
-        Alguns navegadores não permitem
-        colocar MediaStream diretamente
-        em iframe.
+           IMPORTANTE:
 
-        Por isso esta função é experimental.
+           O navegador vai abrir a própria
+           janela de seleção de tela.
+
+           Isso não deve ser colocado
+           dentro de um iframe.
         */
 
-    } catch (error) {
+        const stream =
+            await navigator.mediaDevices
+                .getDisplayMedia({
 
-        console.log(
+                    video: true,
+
+                    audio: false
+
+                });
+
+
+        /*
+           Coloca a captura no vídeo
+        */
+
+        screenCapture.srcObject =
+            stream;
+
+
+        content.style.display =
+            "none";
+
+        screenCapture.style.display =
+            "block";
+
+
+        virtualScreen.style.display =
+            "block";
+
+
+        showStatus(
+            "Tela compartilhada."
+        );
+
+
+        /*
+           Se o usuário parar o compartilhamento
+        */
+
+        const tracks =
+            stream.getVideoTracks();
+
+
+        if (tracks.length > 0) {
+
+            tracks[0].addEventListener(
+                "ended",
+                () => {
+
+                    screenCapture.srcObject =
+                        null;
+
+                    screenCapture.style.display =
+                        "none";
+
+                    content.style.display =
+                        "block";
+
+                    showStatus(
+                        "Compartilhamento encerrado."
+                    );
+
+                }
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+        showStatus(
             "Captura cancelada."
         );
 
@@ -333,12 +789,86 @@ async function captureScreen() {
 }
 
 
-// =============================
-// ARRASTAR TELA
-// =============================
+/* =====================================
+   FECHAR TELA
+===================================== */
 
-const header =
-    document.getElementById("screenHeader");
+closeButton.addEventListener(
+    "click",
+    () => {
+
+        virtualScreen.style.display =
+            "none";
+
+    }
+);
+
+
+/* =====================================
+   BOTÃO CÂMERA
+===================================== */
+
+cameraButton.addEventListener(
+    "click",
+    () => {
+
+        startCamera();
+
+    }
+);
+
+
+/* =====================================
+   BOTÃO ABRIR
+===================================== */
+
+openButton.addEventListener(
+    "click",
+    () => {
+
+        openURL();
+
+    }
+);
+
+
+/* =====================================
+   ENTER NA URL
+===================================== */
+
+urlInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            openURL();
+
+        }
+
+    }
+);
+
+
+/* =====================================
+   CAPTURA
+===================================== */
+
+captureButton.addEventListener(
+    "click",
+    () => {
+
+        captureScreen();
+
+    }
+);
+
+
+/* =====================================
+   ARRASTAR TELA
+===================================== */
 
 let dragging = false;
 
@@ -346,42 +876,53 @@ let offsetX = 0;
 let offsetY = 0;
 
 
+const header =
+    document.getElementById("screenHeader");
+
+
 header.addEventListener(
     "pointerdown",
-    startDrag
+    event => {
+
+        dragging = true;
+
+
+        const rect =
+            virtualScreen
+                .getBoundingClientRect();
+
+
+        offsetX =
+            event.clientX - rect.left;
+
+
+        offsetY =
+            event.clientY - rect.top;
+
+
+        header.setPointerCapture(
+            event.pointerId
+        );
+
+    }
 );
-
-function startDrag(e) {
-
-    dragging = true;
-
-    const rect =
-        virtualScreen.getBoundingClientRect();
-
-    offsetX =
-        e.clientX - rect.left;
-
-    offsetY =
-        e.clientY - rect.top;
-
-    header.setPointerCapture(
-        e.pointerId
-    );
-}
 
 
 header.addEventListener(
     "pointermove",
-    e => {
+    event => {
 
         if (!dragging)
             return;
 
+
         virtualScreen.style.left =
-            (e.clientX - offsetX) + "px";
+            (event.clientX - offsetX) + "px";
+
 
         virtualScreen.style.top =
-            (e.clientY - offsetY) + "px";
+            (event.clientY - offsetY) + "px";
+
 
         virtualScreen.style.transform =
             "none";
@@ -400,14 +941,26 @@ header.addEventListener(
 );
 
 
-// =============================
-// INICIAR
-// =============================
+header.addEventListener(
+    "pointercancel",
+    () => {
+
+        dragging = false;
+
+    }
+);
+
+
+/* =====================================
+   INICIAR
+===================================== */
 
 startCamera();
 
 </script>
 
+
 </body>
+
 </html>
 ```
